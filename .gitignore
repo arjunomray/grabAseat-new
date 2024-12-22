@@ -1,0 +1,60 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+dist/
+dist-ssr/
+
+# Local environment files
+*.local
+
+# Editor directories and files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build directories
+frontend/dist/
+frontend/.vite/
+
+# Ignore database files
+data.db
+
+# Ignore Swagger generated files
+docs/docs.go
+docs/swagger.json
+docs/swagger.yaml
+
+# Ignore Go build files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Ignore Go vendor directory
+vendor/
+
+# Ignore coverage files
+coverage/
+*.coverprofile
+
+# Ignore IDE specific files
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
