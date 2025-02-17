@@ -5,11 +5,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"arjunomray/eventer/dbConfig"
-	_ "arjunomray/eventer/docs"
 	"arjunomray/eventer/handlers"
 	"arjunomray/eventer/middleware"
 )
@@ -28,7 +25,6 @@ func main() {
 	}))
 
 	// Swagger setup
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Routes
 	r.POST("/register", handlers.RegisterUser)
