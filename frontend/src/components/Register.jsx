@@ -33,7 +33,11 @@ const Register = () => {
                 console.error('Registration failed');
             }
         } catch (error) {
-            console.error('Error:', error);
+            if (error.message === 'User already exists') {
+                setError(error.message);
+            } else {
+                console.error('Error:', error);
+            }
         }
     };
 

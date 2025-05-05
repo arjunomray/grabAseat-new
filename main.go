@@ -38,6 +38,8 @@ func main() {
 	protected.POST("/tickets", handlers.CreateTicket)
 	protected.GET("/tickets", handlers.GetTickets)
 	protected.GET("/tickets/:id", handlers.GetUserTickets)
+	protected.GET("/users/:id", handlers.GetUser)
+	protected.GET("/users/:id/events", handlers.GetUserEvents)
 
 	log.Print("Server started on port 8080")
 	r.Run()

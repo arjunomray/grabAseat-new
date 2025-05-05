@@ -21,12 +21,16 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 }
 
 type Event struct {
-	ID        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
-	Name      string    `json:"name"`
-	Time      string    `json:"time"`
-	CreatedBy string    `json:"createdBy"`
-	Users     []User    `json:"users" gorm:"many2many:user_events;"`
-	Tickets   []Ticket  `json:"tickets" gorm:"foreignKey:EventID"`
+	ID             uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
+	CreatedBy      string    `json:"createdBy" gorm:"foreignKey:UserID"`
+	Name           string    `json:"name"`
+	Time           string    `json:"time"`
+	Location       string    `json:"location"`
+	Price          float64   `json:"price"`
+	SeatsAvailable int       `json:"seatsAvailable"`
+	Tags           []string  `json:"tags" gorm:"type:jsonb"`
+	Users          []User    `json:"users" gorm:"many2many:user_events;"`
+	Tickets        []Ticket  `json:"tickets" gorm:"foreignKey:EventID"`
 }
 
 func (e *Event) BeforeCreate(tx *gorm.DB) error {
