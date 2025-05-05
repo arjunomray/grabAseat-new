@@ -1,3 +1,49 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+  
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white rounded-lg 
+    hover:bg-blue-700 transition-all duration-300 
+    transform hover:-translate-y-0.5 
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg 
+    hover:bg-gray-300 transition-all duration-300 
+    transform hover:-translate-y-0.5 
+    focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg 
+    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+    transition-all duration-300;
+  }
+
+  .page-container {
+    @apply max-w-4xl mx-auto p-6 space-y-6;
+  }
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
