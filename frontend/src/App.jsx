@@ -5,7 +5,7 @@ import Login from './components/Login';
 import CreateEvent from './components/CreateEvent';
 import Events from './components/Events';
 import UserTickets from './components/UserTickets';
-import { Logout } from './components/Logout';
+import Profile from './components/Profile';
 
 const App = () => {
   const [userId, setUserId] = useState(localStorage.getItem('userId'));
@@ -35,7 +35,7 @@ const App = () => {
             {userId && <li><Link to="/create-event" className="hover:underline">Create Event</Link></li>}
             {userId && <li><Link to="/events" className="hover:underline">Events</Link></li>}
             {userId && <li><Link to={`/user-tickets/${userId}`} className="hover:underline">Your Tickets</Link></li>}
-            {userId && <li><Link to="/logout" className="hover:underline">Logout</Link></li>}
+            {userId && <li><Link to="/profile" className="hover:underline">Profile</Link></li>}
           </ul>
         </nav>
         <div className="container mx-auto p-4">
@@ -45,7 +45,7 @@ const App = () => {
             <Route path="/create-event" element={<CreateEvent />} />
             <Route path="/events" element={<Events />} />
             <Route path="/user-tickets/:id" element={<UserTickets />} />
-            <Route path="/logout" element={<Logout setUserId={setUserId} />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<h1 className="text-center text-2xl">Not Found</h1>} />
           </Routes>
         </div>
