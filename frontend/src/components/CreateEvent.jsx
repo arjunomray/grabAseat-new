@@ -81,7 +81,7 @@ const CreateEvent = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setSuccessMessage(''); // Clear any previous success message
+        setSuccessMessage('');
         try {
             const response = await fetch('http://localhost:8080/events', {
                 method: 'POST',
@@ -95,13 +95,12 @@ const CreateEvent = () => {
                     location: formData.location,
                     price: parseFloat(formData.price),
                     seatsAvailable: parseInt(formData.seatsAvailable),
-                    tags: [...tags],
-                    createdBy: localStorage.getItem('userId')
+                    tags: tags
                 })
             });
             if (response.ok) {
                 setSuccessMessage('Event created successfully!');
-                setFormData({ name: '', time: '' }); // Clear the form
+                setFormData({ name: '', time: '' });
             } else {
                 console.error('Event creation failed');
             }

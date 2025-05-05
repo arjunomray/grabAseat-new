@@ -27,16 +27,6 @@ func CreateEvent(c *gin.Context) {
 		return
 	}
 
-	event := models.Event{
-		Name:           eventInput.Name,
-		Time:           eventInput.Time,
-		Location:       eventInput.Location,
-		Price:          eventInput.Price,
-		SeatsAvailable: eventInput.SeatsAvailable,
-		Tags:           eventInput.Tags,
-		CreatedBy:      eventInput.CreatedBy,
-	}
-
 	// Get user ID from JWT token
 	claims, exists := c.Get("claims")
 	if !exists {
@@ -45,8 +35,23 @@ func CreateEvent(c *gin.Context) {
 	}
 	userClaims := claims.(*utils.Claims)
 
-	event.ID = uuid.New()
-	event.CreatedBy = userClaims.UserID.String() // Set the creator's ID
+	// Parse the createdBy UUID
+	createdByUUID, err := uuid.Parse(userClaims.UserID.String())
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	event := models.Event{
+		ID:             uuid.New(),
+		Name:           eventInput.Name,
+		Time:           eventInput.Time,
+		Location:       eventInput.Location,
+		Price:          eventInput.Price,
+		SeatsAvailable: eventInput.SeatsAvailable,
+		Tags:           eventInput.Tags,
+		CreatedBy:      createdByUUID,
+	}
 
 	if err := dbConfig.Db.Create(&event).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
