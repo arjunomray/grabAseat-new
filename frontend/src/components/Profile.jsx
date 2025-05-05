@@ -1,10 +1,90 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+const EventCard = ({ event }) => (
+  <div className="bg-gray-50 rounded-xl p-4 hover:shadow-md transition-shadow duration-200">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div>
+        <h3 className="text-sm font-medium text-gray-500">Event Name</h3>
+        <p className="mt-1 text-sm text-gray-900">{event.name}</p>
+      </div>
+      <div>
+        <h3 className="text-sm font-medium text-gray-500">Date & Time</h3>
+        <p className="mt-1 text-sm text-gray-900">
+          {new Date(event.time).toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}
+        </p>
+      </div>
+      <div>
+        <h3 className="text-sm font-medium text-gray-500">Location</h3>
+        <p className="mt-1 text-sm text-gray-900">{event.location}</p>
+      </div>
+      <div>
+        <h3 className="text-sm font-medium text-gray-500">Price</h3>
+        <p className="mt-1 text-sm text-gray-900">${event.price}</p>
+      </div>
+      <div>
+        <h3 className="text-sm font-medium text-gray-500">Available Seats</h3>
+        <p className="mt-1 text-sm text-gray-900">{event.seatsAvailable}</p>
+      </div>
+      {event.tags && event.tags.length > 0 && (
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Tags</h3>
+          <div className="mt-1 flex flex-wrap gap-1">
+            {event.tags.map((tag, index) => (
+              <span
+                key={index}
+                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+const EmptyState = ({ message, actionText, onAction }) => (
+  <div className="text-center py-12 bg-gray-50 rounded-xl">
+    <svg
+      className="mx-auto h-12 w-12 text-gray-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+      />
+    </svg>
+    <h3 className="mt-2 text-sm font-medium text-gray-900">{message}</h3>
+    {actionText && (
+      <div className="mt-6">
+        <button
+          onClick={onAction}
+          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          {actionText}
+        </button>
+      </div>
+    )}
+  </div>
+);
+
 export const Profile = ({ setUserId }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [userEvents, setUserEvents] = useState([]);
+  const [createdEvents, setCreatedEvents] = useState([]);
+  const [registeredEvents, setRegisteredEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -45,13 +125,17 @@ export const Profile = ({ setUserId }) => {
           }
         );
         if (!response.ok) {
-          setUserEvents([]);
+          setCreatedEvents([]);
+          setRegisteredEvents([]);
           return;
         }
         const data = await response.json();
-        setUserEvents(data);
+        setCreatedEvents(data.created_events || []);
+        setRegisteredEvents(data.registered_events || []);
       } catch (error) {
         console.error('Error fetching events:', error);
+        setCreatedEvents([]);
+        setRegisteredEvents([]);
       }
     };
     fetchUserEvents();
@@ -122,87 +206,54 @@ export const Profile = ({ setUserId }) => {
           </div>
         </div>
 
-        {/* Events Section */}
+        {/* Created Events Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">My Events</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Events I've Created</h2>
+            <button
+              onClick={() => navigate('/events/create')}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Create New Event
+            </button>
+          </div>
           <div className="space-y-4">
-            {userEvents.length > 0 ? (
-              userEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="bg-gray-50 rounded-xl p-4 hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Event Name</h3>
-                      <p className="mt-1 text-sm text-gray-900">{event.name}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Date & Time</h3>
-                      <p className="mt-1 text-sm text-gray-900">
-                        {new Date(event.time).toLocaleDateString('en-US', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Location</h3>
-                      <p className="mt-1 text-sm text-gray-900">{event.location}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Price</h3>
-                      <p className="mt-1 text-sm text-gray-900">${event.price}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Available Seats</h3>
-                      <p className="mt-1 text-sm text-gray-900">{event.seatsAvailable}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-500">Tags</h3>
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {event.tags && event.tags.split(',').map((tag, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
-                          >
-                            {tag.trim()}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            {createdEvents.length > 0 ? (
+              createdEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
               ))
             ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-xl">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No events found</h3>
-                <p className="mt-1 text-sm text-gray-500">Get started by registering for an event.</p>
-                <div className="mt-6">
-                  <button
-                    onClick={() => navigate('/events')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Browse Events
-                  </button>
-                </div>
-              </div>
+              <EmptyState
+                message="You haven't created any events yet"
+                actionText="Create Your First Event"
+                onAction={() => navigate('/events/create')}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Registered Events Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Events I'm Registered For</h2>
+            <button
+              onClick={() => navigate('/events')}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Browse Events
+            </button>
+          </div>
+          <div className="space-y-4">
+            {registeredEvents.length > 0 ? (
+              registeredEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))
+            ) : (
+              <EmptyState
+                message="You haven't registered for any events yet"
+                actionText="Browse Available Events"
+                onAction={() => navigate('/events')}
+              />
             )}
           </div>
         </div>

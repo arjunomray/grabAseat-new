@@ -32,20 +32,35 @@ func GetUser(c *gin.Context) {
 
 func GetUserEvents(c *gin.Context) {
 	id := c.Param("id")
-
-	var user models.User
-	if err := dbConfig.Db.Where("id = ?", id).First(&user).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	userID, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	var events []models.Event
-	if err := dbConfig.Db.Where("createdBy = ?", id).Find(&events).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Events not found"})
+	// Get events created by user
+	var createdEvents []models.Event
+	if err := dbConfig.Db.Where("created_by = ?", userID).Find(&createdEvents).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching created events"})
 		return
 	}
 
-	c.JSON(http.StatusOK, events)
+	// Get events user is registered for through tickets
+	var registeredEvents []models.Event
+	if err := dbConfig.Db.
+		Joins("JOIN tickets ON tickets.event_id = events.id").
+		Where("tickets.user_id = ?", userID).
+		Find(&registeredEvents).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching registered events"})
+		return
+	}
+
+	response := gin.H{
+		"created_events":    createdEvents,
+		"registered_events": registeredEvents,
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 func RegisterUser(c *gin.Context) {
