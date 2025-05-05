@@ -13,7 +13,7 @@ const LandingPage = () => {
                         Your one-stop destination for discovering and booking amazing events.
                         Join us to explore concerts, workshops, conferences, and more!
                     </p>
-                    <div className="space-x-4">
+                    <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 justify-center items-center md:space-x-4">
                         <Link
                             to="/register"
                             className="inline-block px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg 

@@ -58,7 +58,7 @@ const EventModal = ({ event, isOpen, onClose, isRegistered, onRegister }) => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>${event.price}</span>
+                        <span>Rs.{event.price}</span>
                     </div>
 
                     {/* Available Seats */}
@@ -79,16 +79,16 @@ const EventModal = ({ event, isOpen, onClose, isRegistered, onRegister }) => {
                     )}
 
                     {/* Tags */}
-                    {event.tags && (
+                    {event.tags && event.tags.length > 0 && (
                         <div className="space-y-2">
                             <h3 className="text-lg font-medium text-gray-900">Tags</h3>
                             <div className="flex flex-wrap gap-2">
-                                {event.tags.split(',').map((tag, index) => (
+                                {event.tags.map((tag, index) => (
                                     <span
                                         key={index}
                                         className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
                                     >
-                                        {tag.trim()}
+                                        {tag}
                                     </span>
                                 ))}
                             </div>
@@ -267,7 +267,7 @@ const CreateEventModal = ({ isOpen, onClose }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Price ($)</label>
+                            <label className="block text-sm font-medium text-gray-700">Price (Rs.)</label>
                             <input
                                 required
                                 type="number"
@@ -511,7 +511,7 @@ const Events = () => {
             const matchesSearch = searchTerm === '' ||
                 event.name.toLowerCase().includes(searchLower) ||
                 event.location.toLowerCase().includes(searchLower) ||
-                (event.tags && event.tags.toLowerCase().includes(searchLower));
+                (event.tags && event.tags.some(tag => tag.toLowerCase().includes(searchLower)));
 
             // Price filter
             const matchesPrice = activeFilters.priceRange === 'all' ||
