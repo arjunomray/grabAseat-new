@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const EventCard = ({ event }) => (
@@ -209,7 +209,7 @@ export const Profile = ({ setUserId }) => {
         {/* Created Events Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Events I've Created</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Events I&apos;ve Created</h2>
             <button
               onClick={() => navigate('/events/create')}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -235,7 +235,7 @@ export const Profile = ({ setUserId }) => {
         {/* Registered Events Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Events I'm Registered For</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Events I&apos;m Registered For</h2>
             <button
               onClick={() => navigate('/events')}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
