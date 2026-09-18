@@ -3,24 +3,45 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs =
-    { nixpkgs, ... }:
-    let
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-      ];
+    { nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
 
-      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f {
-        inherit system;
-        pkgs = import nixpkgs { inherit system; };
-      });
-    in
-    {
-      devShells = forAllSystems ({ pkgs, ... }: {
-        default = pkgs.mkShell {
+        # Go backend (the service in the repo root).
+        backend = pkgs.buildGoModule {
+          pname = "grabmyseat-backend";
+          version = "0.1.0";
+          src = ./.;
+          vendorHash = "sha256-Dh5Cday9GgZ30sFRKMxCmffPSstuXAR49R2f87YULzo=";
+          ldflags = [
+            "-s"
+            "-w"
+          ];
+          meta.mainProgram = "eventer";
+        };
+
+        # React frontend (Vite static build).
+        frontend = pkgs.buildNpmPackage {
+          pname = "grabmyseat-frontend";
+          version = "0.1.0";
+          src = ./frontend;
+          nodejs = pkgs.nodejs_22;
+          npmDepsHash = "sha256-i7RWWbkJniotQlBx55mbsKDf83QA43HWd3bKVZYSnSs=";
+          installPhase = ''
+            mkdir -p $out
+            cp -r dist/. $out/
+          '';
+        };
+      in
+      {
+        # `nix develop`
+        devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             go
             gopls
@@ -43,15 +64,24 @@
           shellHook = ''
             export SSL_CERT_FILE="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
             export NIX_SSL_CERT_FILE="$SSL_CERT_FILE"
-
-            echo "GrabMySeat dev shell"
-            echo "  go:    $(go version)"
-            echo "  node:  $(node --version)"
-            echo "  npm:   $(npm --version)"
-            echo "  psql:  $(psql --version)"
-            echo "  make:  $(make --version | head -1)"
+            echo "GrabMySeat dev shell ($(go version))"
           '';
         };
-      });
-    };
+
+        # `nix build .#backend` / `nix build .#frontend`
+        packages = {
+          inherit backend frontend;
+        };
+
+        # `nix flake check` builds both.
+        checks = {
+          inherit backend frontend;
+        };
+
+        # `nix fmt` — format every .nix file in the repo.
+        formatter = pkgs.writeShellScriptBin "nixfmt" ''
+          exec ${pkgs.nixfmt}/bin/nixfmt "$@" $(find . -type f -name '*.nix' -not -path './.git/*')
+        '';
+      }
+    );
 }
