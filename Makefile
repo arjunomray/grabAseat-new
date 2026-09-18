@@ -72,7 +72,7 @@ migrate: db-start ## Apply database migrations with goose
 test: db-start ## Run the Go tests against a dedicated test database
 	@createdb -h localhost -p $(PGPORT) -U $(PGUSER) $(TEST_DB_NAME) 2>/dev/null || true
 	@goose -dir migrations postgres "host=localhost port=$(PGPORT) user=$(PGUSER) password=$(PGPASSWORD) dbname=$(TEST_DB_NAME) sslmode=disable" up
-	DB_NAME=$(TEST_DB_NAME) go test -tags integration ./...
+	DB_NAME=$(TEST_DB_NAME) go test -race -tags integration ./...
 
 ## --- builds ------------------------------------------------------------------
 
