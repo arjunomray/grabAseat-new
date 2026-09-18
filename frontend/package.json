@@ -12,13 +12,13 @@
   "dependencies": {
     "@zxing/browser": "^0.2.1",
     "qrcode.react": "^4.2.0",
-    "react": "^18.3.1",
+    "react": "^19.3.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
-    "@types/react": "^18.3.17",
+    "@types/react": "^19.3.0",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
