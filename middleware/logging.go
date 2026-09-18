@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-)
 
-const requestIDKey = "request_id"
+	"arjunomray/eventer/api"
+)
 
 // RequestID ensures every request has an ID. It reuses the incoming
 // X-Request-ID header when present and generates one otherwise, storing it in
@@ -20,7 +20,7 @@ func RequestID() gin.HandlerFunc {
 		if id == "" {
 			id = uuid.NewString()
 		}
-		c.Set(requestIDKey, id)
+		c.Set(api.RequestIDKey, id)
 		c.Header("X-Request-ID", id)
 		c.Next()
 	}
@@ -37,7 +37,7 @@ func Logger() gin.HandlerFunc {
 			"path", c.Request.URL.Path,
 			"status", c.Writer.Status(),
 			"duration_ms", time.Since(start).Milliseconds(),
-			"request_id", c.GetString(requestIDKey),
+			"request_id", api.RequestID(c),
 			"client_ip", c.ClientIP(),
 		}
 		if len(c.Errors) > 0 {
@@ -61,9 +61,9 @@ func Recovery() gin.HandlerFunc {
 				slog.Error("panic recovered",
 					"error", recovered,
 					"path", c.Request.URL.Path,
-					"request_id", c.GetString(requestIDKey),
+					"request_id", api.RequestID(c),
 				)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+				api.Error(c, http.StatusInternalServerError, "internal_error", "internal server error")
 			}
 		}()
 		c.Next()

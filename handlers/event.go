@@ -1,44 +1,44 @@
 package handlers
 
 import (
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/models"
-	"arjunomray/eventer/utils"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/models"
+	"arjunomray/eventer/utils"
 )
 
 type EventInput struct {
-	Name           string   `json:"name"`
-	Time           string   `json:"time"`
-	Location       string   `json:"location"`
-	Price          float64  `json:"price"`
-	SeatsAvailable int      `json:"seatsAvailable"`
+	Name           string   `json:"name" binding:"required"`
+	Time           string   `json:"time" binding:"required"`
+	Location       string   `json:"location" binding:"required"`
+	Price          float64  `json:"price" binding:"gte=0"`
+	SeatsAvailable int      `json:"seatsAvailable" binding:"required,gte=1"`
 	Tags           []string `json:"tags"`
-	CreatedBy      string   `json:"createdBy"`
 }
 
 func CreateEvent(c *gin.Context) {
 	var eventInput EventInput
 	if err := c.ShouldBindJSON(&eventInput); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		api.BadRequest(c, err.Error())
 		return
 	}
 
-	// Get user ID from JWT token
+	// The event owner comes from the JWT, never from the request body.
 	claims, exists := c.Get("claims")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		api.Unauthorized(c, "Unauthorized")
 		return
 	}
-	userClaims := claims.(*utils.Claims)
-
-	// Parse the createdBy UUID
-	createdByUUID, err := uuid.Parse(userClaims.UserID.String())
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	userClaims, ok := claims.(*utils.Claims)
+	if !ok {
+		api.Unauthorized(c, "Unauthorized")
 		return
 	}
 
@@ -50,21 +50,21 @@ func CreateEvent(c *gin.Context) {
 		Price:          eventInput.Price,
 		SeatsAvailable: eventInput.SeatsAvailable,
 		Tags:           eventInput.Tags,
-		CreatedBy:      createdByUUID,
+		CreatedBy:      userClaims.UserID,
 	}
 
 	if err := dbConfig.Db.Create(&event).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		api.Internal(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, event)
+	c.JSON(http.StatusCreated, event)
 }
 
 func GetEvents(c *gin.Context) {
 	var events []models.Event
 	if err := dbConfig.Db.Find(&events).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		api.Internal(c, err)
 		return
 	}
 
@@ -72,11 +72,19 @@ func GetEvents(c *gin.Context) {
 }
 
 func GetEvent(c *gin.Context) {
-	eventIDParam := c.Param("id")
-	eventID := uuid.MustParse(eventIDParam)
+	eventID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		api.BadRequest(c, "Invalid event ID")
+		return
+	}
+
 	var event models.Event
 	if err := dbConfig.Db.First(&event, eventID).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Event not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			api.NotFound(c, "Event not found")
+			return
+		}
+		api.Internal(c, err)
 		return
 	}
 

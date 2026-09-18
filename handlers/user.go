@@ -1,29 +1,39 @@
 package handlers
 
 import (
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/models"
-	"arjunomray/eventer/utils"
 	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/models"
+	"arjunomray/eventer/utils"
 )
 
 type RegisterUserInput struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=8"`
 }
 
 func GetUser(c *gin.Context) {
-	id := c.Param("id")
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		api.BadRequest(c, "Invalid user ID")
+		return
+	}
 
 	var user models.User
-	if err := dbConfig.Db.Where("id = ?", id).First(&user).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	if err := dbConfig.Db.First(&user, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			api.NotFound(c, "User not found")
+			return
+		}
+		api.Internal(c, err)
 		return
 	}
 
@@ -31,17 +41,16 @@ func GetUser(c *gin.Context) {
 }
 
 func GetUserEvents(c *gin.Context) {
-	id := c.Param("id")
-	userID, err := uuid.Parse(id)
+	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		api.BadRequest(c, "Invalid user ID")
 		return
 	}
 
 	// Get events created by user
 	var createdEvents []models.Event
 	if err := dbConfig.Db.Where("created_by = ?", userID).Find(&createdEvents).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching created events"})
+		api.Internal(c, err)
 		return
 	}
 
@@ -51,32 +60,30 @@ func GetUserEvents(c *gin.Context) {
 		Joins("JOIN tickets ON tickets.event_id = events.id").
 		Where("tickets.user_id = ?", userID).
 		Find(&registeredEvents).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching registered events"})
+		api.Internal(c, err)
 		return
 	}
 
-	response := gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"created_events":    createdEvents,
 		"registered_events": registeredEvents,
-	}
-
-	c.JSON(http.StatusOK, response)
+	})
 }
 
 func RegisterUser(c *gin.Context) {
 	var userInput RegisterUserInput
 	if err := c.ShouldBindJSON(&userInput); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		api.BadRequest(c, err.Error())
 		return
 	}
 
 	var existingUser models.User
 	err := dbConfig.Db.Where("email = ?", userInput.Email).First(&existingUser).Error
 	if err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User already exists"})
+		api.Conflict(c, "User already exists")
 		return
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		api.Internal(c, err)
 		return
 	}
 
@@ -88,33 +95,38 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	if err := dbConfig.Db.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		api.Internal(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusCreated, user)
 }
 
 func LoginUser(c *gin.Context) {
 	var credentials struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&credentials); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		api.BadRequest(c, err.Error())
 		return
 	}
 
 	var user models.User
-	if err := dbConfig.Db.Where("email = ? AND password = ?", credentials.Email, credentials.Password).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+	err := dbConfig.Db.Where("email = ? AND password = ?", credentials.Email, credentials.Password).First(&user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		api.Unauthorized(c, "Invalid email or password")
+		return
+	}
+	if err != nil {
+		api.Internal(c, err)
 		return
 	}
 
 	token, err := utils.GenerateJWT(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		api.Internal(c, err)
 		return
 	}
 

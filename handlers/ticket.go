@@ -1,41 +1,49 @@
 package handlers
 
 import (
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/models"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/models"
 )
 
 func CreateTicket(c *gin.Context) {
 	var ticket models.Ticket
-
 	if err := c.ShouldBindJSON(&ticket); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		api.BadRequest(c, err.Error())
 		return
 	}
 
 	var existingTicket models.Ticket
-	if err := dbConfig.Db.Where("event_id = ? AND user_id = ?", ticket.EventID, ticket.UserID).First(&existingTicket).Error; err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ticket already exists"})
+	err := dbConfig.Db.Where("event_id = ? AND user_id = ?", ticket.EventID, ticket.UserID).First(&existingTicket).Error
+	switch {
+	case err == nil:
+		api.Conflict(c, "Ticket already exists")
+		return
+	case !errors.Is(err, gorm.ErrRecordNotFound):
+		api.Internal(c, err)
 		return
 	}
 
 	ticket.ID = uuid.New()
 	if err := dbConfig.Db.Create(&ticket).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		api.Internal(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, ticket)
+	c.JSON(http.StatusCreated, ticket)
 }
 
 func GetTickets(c *gin.Context) {
 	var tickets []models.Ticket
 	if err := dbConfig.Db.Find(&tickets).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		api.Internal(c, err)
 		return
 	}
 
@@ -45,12 +53,12 @@ func GetTickets(c *gin.Context) {
 func DeleteTickets(c *gin.Context) {
 	var ticket models.Ticket
 	if err := c.ShouldBindJSON(&ticket); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		api.BadRequest(c, err.Error())
 		return
 	}
 
 	if err := dbConfig.Db.Delete(&ticket).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		api.Internal(c, err)
 		return
 	}
 
@@ -58,18 +66,19 @@ func DeleteTickets(c *gin.Context) {
 }
 
 func GetUserTickets(c *gin.Context) {
-	userIDParam := c.Param("id")
-
-	userID, err := uuid.Parse(userIDParam)
-
+	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		api.BadRequest(c, "Invalid user ID")
 		return
 	}
 
 	var user models.User
 	if err := dbConfig.Db.Preload("Tickets").First(&user, userID).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			api.NotFound(c, "User not found")
+			return
+		}
+		api.Internal(c, err)
 		return
 	}
 

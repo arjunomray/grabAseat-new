@@ -1,31 +1,30 @@
 package middleware
 
 import (
-	"arjunomray/eventer/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/utils"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(401, gin.H{"error": "Authorization header is required"})
-			c.Abort()
+			api.Unauthorized(c, "Authorization header is required")
 			return
 		}
 
 		tokenString := strings.Split(authHeader, " ")[1]
 		if tokenString == "" {
-			c.JSON(401, gin.H{"error": "Token is required"})
-			c.Abort()
+			api.Unauthorized(c, "Token is required")
 			return
 		}
 		claims, err := utils.VerifyJWT(tokenString)
 		if err != nil {
-			c.JSON(401, gin.H{"error": err.Error()})
-			c.Abort()
+			api.Unauthorized(c, "Invalid or expired token")
 			return
 		}
 		c.Set("claims", claims)
