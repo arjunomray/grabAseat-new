@@ -10,13 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-
 	"arjunomray/eventer/config"
 	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/handlers"
-	"arjunomray/eventer/middleware"
+	"arjunomray/eventer/router"
 	"arjunomray/eventer/utils"
 )
 
@@ -34,44 +30,9 @@ func main() {
 	utils.SetJWTSecret(cfg.JWTSecret)
 	dbConfig.InitDatabase(cfg.Database)
 
-	r := gin.New()
-	r.Use(middleware.RequestID())
-	r.Use(middleware.Logger())
-	r.Use(middleware.Recovery())
-
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     cfg.CORSOrigins,
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Authorization", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-	}))
-
-	// Infrastructure endpoints (unversioned).
-	r.GET("/healthz", handlers.Healthz)
-	r.GET("/readyz", handlers.Readyz)
-
-	// API v1
-	v1 := r.Group("/api/v1")
-	v1.POST("/register", handlers.RegisterUser)
-	v1.POST("/login", handlers.LoginUser)
-
-	protected := v1.Group("")
-	protected.Use(middleware.AuthMiddleware())
-	protected.POST("/events", handlers.CreateEvent)
-	protected.GET("/events", handlers.GetEvents)
-	protected.GET("/events/:id", handlers.GetEvent)
-	protected.POST("/tickets", handlers.CreateTicket)
-	protected.GET("/tickets", handlers.GetTickets)
-	protected.GET("/tickets/me", handlers.GetTickets)
-	protected.DELETE("/tickets/:id", handlers.DeleteTicket)
-	protected.GET("/users/:id", handlers.GetUser)
-	protected.GET("/users/:id/events", handlers.GetUserEvents)
-	protected.GET("/users/:id/tickets", handlers.GetUserTickets)
-
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,
-		Handler: r,
+		Handler: router.New(cfg),
 	}
 
 	// Stop accepting new work on SIGINT/SIGTERM and drain in-flight requests.

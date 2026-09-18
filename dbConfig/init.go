@@ -13,10 +13,16 @@ import (
 
 var Db *gorm.DB
 
+// Connect opens a database connection without retrying or exiting, so tests
+// and tooling can handle failures themselves.
+func Connect(cfg config.Database) (*gorm.DB, error) {
+	return gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{TranslateError: true})
+}
+
 func InitDatabase(cfg config.Database) {
 	var err error
 	for i := range 5 {
-		Db, err = gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{TranslateError: true})
+		Db, err = Connect(cfg)
 		if err == nil {
 			break
 		}

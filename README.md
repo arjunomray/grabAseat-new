@@ -138,9 +138,11 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 ## Testing
 
 ```bash
-make test        # go test ./...
+make test        # starts Postgres, migrates a dedicated eventer_test DB, runs go test ./...
 nix flake check  # builds the backend and frontend
 ```
+
+Handler tests run against a real PostgreSQL database (`eventer_test`), so `make test` is the supported entry point — it creates and migrates that database first.
 
 ## Design notes and tradeoffs
 
