@@ -58,7 +58,7 @@ const EventModal = ({ event, isOpen, onClose, isRegistered, onRegister }) => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span>Rs.{event.price}</span>
+                        <span>Rs.{(event.priceCents / 100).toFixed(2)}</span>
                     </div>
 
                     {/* Available Seats */}
@@ -157,10 +157,10 @@ const CreateEventModal = ({ isOpen, onClose }) => {
                 },
                 body: JSON.stringify({
                     ...formData,
-                    price: parseFloat(formData.price),
+                    time: new Date(formData.time).toISOString(),
+                    priceCents: Math.round(parseFloat(formData.price) * 100),
                     seatsAvailable: parseInt(formData.seatsAvailable),
-                    tags: tags,
-                    createdBy: localStorage.getItem('userId')
+                    tags: tags
                 })
             });
             if (response.ok) {
@@ -515,8 +515,8 @@ const Events = () => {
 
             // Price filter
             const matchesPrice = activeFilters.priceRange === 'all' ||
-                (activeFilters.priceRange === 'free' && event.price === 0) ||
-                (activeFilters.priceRange === 'paid' && event.price > 0);
+                (activeFilters.priceRange === 'free' && event.priceCents === 0) ||
+                (activeFilters.priceRange === 'paid' && event.priceCents > 0);
 
             // Date filter
             const eventDate = new Date(event.time);

@@ -26,7 +26,7 @@ const EventCard = ({ event }) => (
       </div>
       <div>
         <h3 className="text-sm font-medium text-gray-500">Price</h3>
-        <p className="mt-1 text-sm text-gray-900">${event.price}</p>
+        <p className="mt-1 text-sm text-gray-900">${(event.priceCents / 100).toFixed(2)}</p>
       </div>
       <div>
         <h3 className="text-sm font-medium text-gray-500">Available Seats</h3>

@@ -130,7 +130,7 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 ## Data model
 
 - **User** — `id` (UUID), `name`, `email` (unique), `password`
-- **Event** — `id`, `created_by`, `name`, `time`, `location`, `price`, `seats_available`, `tags`
+- **Event** — `id`, `created_by`, `name`, `time` (`timestamptz`), `location`, `price_cents` (integer minor units), `seats_available`, `tags`
 - **Ticket** — `id`, `event_id`, `user_id` (a registration connecting a user to an event)
 
 ## Testing

@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -15,12 +16,12 @@ import (
 )
 
 type EventInput struct {
-	Name           string   `json:"name" binding:"required"`
-	Time           string   `json:"time" binding:"required"`
-	Location       string   `json:"location" binding:"required"`
-	Price          float64  `json:"price" binding:"gte=0"`
-	SeatsAvailable int      `json:"seatsAvailable" binding:"required,gte=1"`
-	Tags           []string `json:"tags"`
+	Name           string    `json:"name" binding:"required"`
+	Time           time.Time `json:"time" binding:"required"`
+	Location       string    `json:"location" binding:"required"`
+	PriceCents     int64     `json:"priceCents" binding:"gte=0"`
+	SeatsAvailable int       `json:"seatsAvailable" binding:"required,gte=1"`
+	Tags           []string  `json:"tags"`
 }
 
 func CreateEvent(c *gin.Context) {
@@ -47,7 +48,7 @@ func CreateEvent(c *gin.Context) {
 		Name:           eventInput.Name,
 		Time:           eventInput.Time,
 		Location:       eventInput.Location,
-		Price:          eventInput.Price,
+		PriceCents:     eventInput.PriceCents,
 		SeatsAvailable: eventInput.SeatsAvailable,
 		Tags:           eventInput.Tags,
 		CreatedBy:      userClaims.UserID,

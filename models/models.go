@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
@@ -8,12 +10,14 @@ import (
 
 // Models
 type User struct {
-	ID       uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
-	Name     string    `json:"name"`
-	Email    string    `json:"email" gorm:"unique"`
-	Password string    `json:"password"`
-	Tickets  []Ticket  `json:"tickets" gorm:"foreignKey:UserID"`
-	Events   []Event   `json:"events" gorm:"many2many:user_events;"`
+	ID        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email" gorm:"unique"`
+	Password  string    `json:"password"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	Tickets   []Ticket  `json:"tickets" gorm:"foreignKey:UserID"`
+	Events    []Event   `json:"events" gorm:"many2many:user_events;"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
@@ -25,11 +29,13 @@ type Event struct {
 	ID             uuid.UUID      `json:"id" gorm:"type:uuid;primaryKey"`
 	CreatedBy      uuid.UUID      `json:"createdBy" gorm:"type:uuid"`
 	Name           string         `json:"name"`
-	Time           string         `json:"time"`
+	Time           time.Time      `json:"time" gorm:"type:timestamptz"`
 	Location       string         `json:"location"`
-	Price          float64        `json:"price"`
+	PriceCents     int64          `json:"priceCents" gorm:"column:price_cents"`
 	SeatsAvailable int            `json:"seatsAvailable"`
 	Tags           pq.StringArray `json:"tags" gorm:"type:text[]"`
+	CreatedAt      time.Time      `json:"createdAt"`
+	UpdatedAt      time.Time      `json:"updatedAt"`
 	Users          []User         `json:"users" gorm:"many2many:user_events;"`
 	Tickets        []Ticket       `json:"tickets" gorm:"foreignKey:EventID"`
 }
@@ -40,9 +46,11 @@ func (e *Event) BeforeCreate(tx *gorm.DB) error {
 }
 
 type Ticket struct {
-	ID      uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
-	EventID uuid.UUID `json:"event_id" gorm:"type:uuid"`
-	UserID  uuid.UUID `json:"user_id" gorm:"type:uuid"`
+	ID        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
+	EventID   uuid.UUID `json:"event_id" gorm:"type:uuid"`
+	UserID    uuid.UUID `json:"user_id" gorm:"type:uuid"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func (t *Ticket) BeforeCreate(tx *gorm.DB) error {
