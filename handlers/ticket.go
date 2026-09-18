@@ -5,6 +5,7 @@ import (
 	"arjunomray/eventer/dbConfig"
 	"arjunomray/eventer/middleware"
 	"arjunomray/eventer/models"
+	"arjunomray/eventer/realtime"
 	"errors"
 	"net/http"
 	"time"
@@ -97,7 +98,21 @@ func CreateTicket(c *gin.Context) {
 		return
 	}
 
+	publishSeats(ticket.EventID)
+
 	c.JSON(http.StatusCreated, ticket)
+}
+
+// publishSeats broadcasts the current seat count for an event.
+func publishSeats(eventID uuid.UUID) {
+	var event models.Event
+	if err := dbConfig.Db.First(&event, "id = ?", eventID).Error; err != nil {
+		return
+	}
+	realtime.Default.Publish(realtime.Update{
+		EventID:        event.ID.String(),
+		SeatsAvailable: event.SeatsAvailable,
+	})
 }
 
 func GetTickets(c *gin.Context) {
@@ -158,6 +173,8 @@ func DeleteTicket(c *gin.Context) {
 		api.Internal(c, err)
 		return
 	}
+
+	publishSeats(ticket.EventID)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Ticket deleted"})
 }

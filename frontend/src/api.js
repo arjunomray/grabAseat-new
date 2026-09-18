@@ -3,7 +3,7 @@
 // In development the Vite dev server proxies /api to the backend, so the
 // default relative path works without configuration. Set VITE_API_URL to point
 // at a different backend (see .env.example).
-const API_BASE = import.meta.env.VITE_API_URL ?? '/api/v1';
+export const API_BASE = import.meta.env.VITE_API_URL ?? '/api/v1';
 
 // Endpoints that must not trigger the global 401 redirect (a 401 there means
 // "wrong credentials", not "your session expired").

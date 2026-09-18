@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { apiFetch } from '../api';
+import { apiFetch, API_BASE } from '../api';
 import { formatPrice } from '../format';
 
 const EventModal = ({ event, isOpen, onClose, isRegistered, onRegister }) => {
@@ -485,6 +485,26 @@ const Events = () => {
         fetchEvents();
         fetchUserTickets();
     }, [userId]);
+
+    // Live seat availability: the server pushes updates as bookings happen.
+    useEffect(() => {
+        const source = new EventSource(`${API_BASE}/stream`);
+        source.onmessage = (event) => {
+            try {
+                const update = JSON.parse(event.data);
+                setEvents((prev) =>
+                    prev.map((item) =>
+                        item.id === update.eventId
+                            ? { ...item, seatsAvailable: update.seatsAvailable }
+                            : item
+                    )
+                );
+            } catch {
+                // Ignore malformed frames.
+            }
+        };
+        return () => source.close();
+    }, []);
 
     const handleRegister = async (eventId) => {
         try {

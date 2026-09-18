@@ -125,6 +125,7 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 |---|---|---|---|
 | `GET` | `/healthz` | – | Liveness probe: the process is running |
 | `GET` | `/readyz` | – | Readiness probe: the database is reachable |
+| `GET` | `/api/v1/stream` | – | Server-Sent Events stream of seat-availability updates |
 | `POST` | `/api/v1/register` | – | Create an account |
 | `POST` | `/api/v1/login` | – | Exchange credentials for a JWT |
 | `POST` | `/api/v1/events` | ✓ | Create an event |

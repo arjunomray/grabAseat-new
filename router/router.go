@@ -33,6 +33,9 @@ func New(cfg *config.Config) *gin.Engine {
 	v1.POST("/register", handlers.RegisterUser)
 	v1.POST("/login", handlers.LoginUser)
 
+	// Public: seat availability stream (EventSource cannot send headers).
+	v1.GET("/stream", handlers.StreamEvents)
+
 	protected := v1.Group("")
 	protected.Use(middleware.AuthMiddleware())
 	protected.POST("/events", handlers.CreateEvent)
