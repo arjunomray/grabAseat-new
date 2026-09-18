@@ -1,7 +1,8 @@
 package main
 
 import (
-	"log"
+	"log/slog"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -14,15 +15,21 @@ import (
 )
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal("configuration error: ", err)
+		slog.Error("configuration error", "error", err)
+		os.Exit(1)
 	}
 
 	utils.SetJWTSecret(cfg.JWTSecret)
 	dbConfig.InitDatabase(cfg.Database)
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(middleware.RequestID())
+	r.Use(middleware.Logger())
+	r.Use(middleware.Recovery())
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.CORSOrigins,
@@ -47,8 +54,9 @@ func main() {
 	protected.GET("/users/:id", handlers.GetUser)
 	protected.GET("/users/:id/events", handlers.GetUserEvents)
 
-	log.Printf("Server started on port %s", cfg.Port)
+	slog.Info("server started", "port", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
-		log.Fatal("server error: ", err)
+		slog.Error("server error", "error", err)
+		os.Exit(1)
 	}
 }

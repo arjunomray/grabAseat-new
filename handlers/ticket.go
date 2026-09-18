@@ -3,7 +3,6 @@ package handlers
 import (
 	"arjunomray/eventer/dbConfig"
 	"arjunomray/eventer/models"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -59,7 +58,6 @@ func DeleteTickets(c *gin.Context) {
 }
 
 func GetUserTickets(c *gin.Context) {
-	log.Print("Here")
 	userIDParam := c.Param("id")
 
 	userID, err := uuid.Parse(userIDParam)
@@ -74,7 +72,6 @@ func GetUserTickets(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 		return
 	}
-	log.Print(user.Tickets)
 
 	c.JSON(http.StatusOK, user.Tickets)
 }

@@ -1,7 +1,8 @@
 package dbConfig
 
 import (
-	"log"
+	"log/slog"
+	"os"
 	"time"
 
 	"arjunomray/eventer/config"
@@ -20,13 +21,18 @@ func InitDatabase(cfg config.Database) {
 		if err == nil {
 			break
 		}
-		log.Printf("Failed to connect db, retrying in 5 seconds (attempt %d/5)", i+1)
+		slog.Warn("failed to connect to database, retrying",
+			"attempt", i+1,
+			"max_attempts", 5,
+			"error", err,
+		)
 		time.Sleep(5 * time.Second)
 	}
 	if err != nil {
-		log.Fatal("Failed to connect to database: ", err)
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
 	}
 
 	Db.AutoMigrate(&models.User{}, &models.Event{}, &models.Ticket{})
-	log.Print("Database Connected")
+	slog.Info("database connected")
 }
