@@ -19,13 +19,15 @@ func SetJWTSecret(secret string) {
 
 type Claims struct {
 	UserID uuid.UUID `json:"user_id"`
+	Role   string    `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID uuid.UUID) (string, error) {
+func GenerateJWT(userID uuid.UUID, role string) (string, error) {
 	now := time.Now()
 	claims := &Claims{
 		UserID: userID,
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(tokenTTL)),

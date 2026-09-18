@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"arjunomray/eventer/api"
 	"log/slog"
 	"net/http"
 	"time"
+
+	"arjunomray/eventer/api"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -57,7 +58,8 @@ func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if recovered := recover(); recovered != nil {
-				slog.Error("panic recovered",
+				slog.Error(
+					"panic recovered",
 					"error", recovered,
 					"path", c.Request.URL.Path,
 					"request_id", api.RequestID(c),

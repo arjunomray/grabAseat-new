@@ -3,9 +3,6 @@
 package handlers_test
 
 import (
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/models"
-	"arjunomray/eventer/utils"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -13,6 +10,10 @@ import (
 	"net/http/httptest"
 	"sync"
 	"testing"
+
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/models"
+	"arjunomray/eventer/utils"
 
 	"github.com/google/uuid"
 )
@@ -57,11 +58,12 @@ func mintTokens(t *testing.T, n int) []string {
 			Name:     fmt.Sprintf("user-%d", i),
 			Email:    fmt.Sprintf("race-%d-%d@example.com", i, uuid.New().ID()),
 			Password: "x",
+			Role:     models.RoleUser,
 		}
 		if err := dbConfig.Db.Create(&user).Error; err != nil {
 			t.Fatalf("create user: %v", err)
 		}
-		token, err := utils.GenerateJWT(user.ID)
+		token, err := utils.GenerateJWT(user.ID, user.Role)
 		if err != nil {
 			t.Fatalf("generate token: %v", err)
 		}

@@ -61,7 +61,8 @@ func Unavailable(c *gin.Context, message string) {
 // Internal logs the underlying error and returns a generic message so database
 // and other implementation details never reach the client.
 func Internal(c *gin.Context, err error) {
-	slog.Error("internal error",
+	slog.Error(
+		"internal error",
 		"error", err,
 		"method", c.Request.Method,
 		"path", c.Request.URL.Path,

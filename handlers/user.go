@@ -1,14 +1,15 @@
 package handlers
 
 import (
+	"errors"
+	"net/http"
+	"strings"
+
 	"arjunomray/eventer/api"
 	"arjunomray/eventer/dbConfig"
 	"arjunomray/eventer/middleware"
 	"arjunomray/eventer/models"
 	"arjunomray/eventer/utils"
-	"errors"
-	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -123,6 +124,7 @@ func RegisterUser(c *gin.Context) {
 		Name:     userInput.Name,
 		Email:    email,
 		Password: string(hash),
+		Role:     models.RoleUser,
 	}
 
 	if err := dbConfig.Db.Create(&user).Error; err != nil {
@@ -166,7 +168,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateJWT(user.ID)
+	token, err := utils.GenerateJWT(user.ID, user.Role)
 	if err != nil {
 		api.Internal(c, err)
 		return

@@ -3,10 +3,6 @@
 package handlers_test
 
 import (
-	"arjunomray/eventer/config"
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/router"
-	"arjunomray/eventer/utils"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -14,6 +10,11 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"arjunomray/eventer/config"
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/router"
+	"arjunomray/eventer/utils"
 
 	"github.com/gin-gonic/gin"
 )

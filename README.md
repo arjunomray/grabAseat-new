@@ -140,7 +140,7 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 | `GET` | `/api/v1/users/:id/events` | ✓ | Events a user created or registered for |
 | `GET` | `/api/v1/users/:id/tickets` | ✓ | Tickets for a user |
 
-> API routes are versioned under `/api/v1`; `/healthz` and `/readyz` stay unversioned.
+> API routes are versioned under `/api/v1` (including the SSE stream at `/api/v1/stream`); `/healthz` and `/readyz` stay unversioned. Admin-only endpoints require a user whose `role` is `admin`; grant it directly with `UPDATE users SET role = 'admin' WHERE email = 'you@example.com';`.
 
 ## Data model
 

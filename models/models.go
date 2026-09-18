@@ -8,12 +8,18 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	RoleUser  = "user"
+	RoleAdmin = "admin"
+)
+
 // Models
 type User struct {
 	ID        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email" gorm:"unique"`
 	Password  string    `json:"-"`
+	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Tickets   []Ticket  `json:"tickets" gorm:"foreignKey:UserID"`

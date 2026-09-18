@@ -1,14 +1,15 @@
 package handlers
 
 import (
+	"errors"
+	"net/http"
+	"time"
+
 	"arjunomray/eventer/api"
 	"arjunomray/eventer/dbConfig"
 	"arjunomray/eventer/middleware"
 	"arjunomray/eventer/models"
 	"arjunomray/eventer/realtime"
-	"errors"
-	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

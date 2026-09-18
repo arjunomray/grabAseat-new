@@ -1,10 +1,11 @@
 package dbConfig
 
 import (
-	"arjunomray/eventer/config"
 	"log/slog"
 	"os"
 	"time"
+
+	"arjunomray/eventer/config"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -25,7 +26,8 @@ func InitDatabase(cfg config.Database) {
 		if err == nil {
 			break
 		}
-		slog.Warn("failed to connect to database, retrying",
+		slog.Warn(
+			"failed to connect to database, retrying",
 			"attempt", i+1,
 			"max_attempts", 5,
 			"error", err,

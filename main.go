@@ -1,10 +1,6 @@
 package main
 
 import (
-	"arjunomray/eventer/config"
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/router"
-	"arjunomray/eventer/utils"
 	"context"
 	"errors"
 	"log/slog"
@@ -13,6 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"arjunomray/eventer/config"
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/router"
+	"arjunomray/eventer/utils"
 )
 
 const shutdownTimeout = 10 * time.Second
