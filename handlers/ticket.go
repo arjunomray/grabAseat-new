@@ -90,7 +90,7 @@ func CreateTicket(c *gin.Context) {
 	case errors.Is(err, errSoldOut):
 		api.Conflict(c, "Event is sold out")
 		return
-	case errors.Is(err, errDuplicate):
+	case errors.Is(err, errDuplicate), errors.Is(err, gorm.ErrDuplicatedKey):
 		api.Conflict(c, "Ticket already exists")
 		return
 	case err != nil:
