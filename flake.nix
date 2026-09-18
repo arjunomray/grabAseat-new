@@ -18,7 +18,7 @@
           pname = "grabmyseat-backend";
           version = "0.1.0";
           src = ./.;
-          vendorHash = "sha256-Dh5Cday9GgZ30sFRKMxCmffPSstuXAR49R2f87YULzo=";
+          vendorHash = "sha256-2+4p/L5hpiRUsZwIRY4VPTJ+5/kcOk3iSJnH14To1Ug=";
           ldflags = [
             "-s"
             "-w"
