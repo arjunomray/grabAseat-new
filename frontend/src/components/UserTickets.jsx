@@ -75,8 +75,8 @@ const UserTickets = () => {
                                                     <h2 className="text-xl font-semibold text-gray-900">
                                                         {event?.name}
                                                     </h2>
-                                                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                        Active
+                                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${ticket.status === 'used' ? 'bg-gray-200 text-gray-700' : 'bg-green-100 text-green-800'}`}>
+                                                        {ticket.status === 'used' ? 'Used' : 'Active'}
                                                     </span>
                                                 </div>
 
@@ -114,7 +114,7 @@ const UserTickets = () => {
                                             <div className="ml-6 flex-shrink-0">
                                                 <div className="p-2 bg-white rounded-lg shadow-sm border border-gray-200">
                                                     <QRCodeSVG
-                                                        value={ticket.id.toString()}
+                                                        value={(ticket.code || ticket.id).toString()}
                                                         size={120}
                                                         level="H"
                                                         includeMargin={true}

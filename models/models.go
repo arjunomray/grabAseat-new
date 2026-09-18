@@ -44,17 +44,31 @@ func (e *Event) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
+const (
+	TicketStatusValid = "valid"
+	TicketStatusUsed  = "used"
+)
+
 type Ticket struct {
-	ID        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
-	EventID   uuid.UUID `json:"event_id" gorm:"type:uuid"`
-	UserID    uuid.UUID `json:"user_id" gorm:"type:uuid"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	Event     *Event    `json:"event,omitempty" gorm:"foreignKey:EventID"`
+	ID        uuid.UUID  `json:"id" gorm:"type:uuid;primaryKey"`
+	EventID   uuid.UUID  `json:"event_id" gorm:"type:uuid"`
+	UserID    uuid.UUID  `json:"user_id" gorm:"type:uuid"`
+	Code      uuid.UUID  `json:"code" gorm:"type:uuid;uniqueIndex"`
+	Status    string     `json:"status"`
+	UsedAt    *time.Time `json:"usedAt,omitempty"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	Event     *Event     `json:"event,omitempty" gorm:"foreignKey:EventID"`
 }
 
 func (t *Ticket) BeforeCreate(tx *gorm.DB) error {
 	t.ID = uuid.New()
+	if t.Code == uuid.Nil {
+		t.Code = uuid.New()
+	}
+	if t.Status == "" {
+		t.Status = TicketStatusValid
+	}
 	return nil
 }
 

@@ -214,6 +214,48 @@ func DeleteTicket(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Ticket deleted"})
 }
 
+type VerifyTicketInput struct {
+	Code uuid.UUID `json:"code" binding:"required"`
+}
+
+// VerifyTicket marks a ticket as used. The QR code carries the ticket's opaque
+// code, so it cannot be derived from the ticket ID.
+func VerifyTicket(c *gin.Context) {
+	var input VerifyTicketInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		api.BadRequest(c, err.Error())
+		return
+	}
+
+	var ticket models.Ticket
+	if err := dbConfig.Db.Preload("Event").Where("code = ?", input.Code).First(&ticket).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			api.NotFound(c, "Ticket not found")
+			return
+		}
+		api.Internal(c, err)
+		return
+	}
+
+	if ticket.Status == models.TicketStatusUsed {
+		api.Conflict(c, "Ticket has already been used")
+		return
+	}
+
+	now := time.Now()
+	if err := dbConfig.Db.Model(&ticket).Updates(map[string]any{
+		"status":  models.TicketStatusUsed,
+		"used_at": now,
+	}).Error; err != nil {
+		api.Internal(c, err)
+		return
+	}
+	ticket.Status = models.TicketStatusUsed
+	ticket.UsedAt = &now
+
+	c.JSON(http.StatusOK, ticket)
+}
+
 func GetUserTickets(c *gin.Context) {
 	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {

@@ -44,6 +44,7 @@ func New(cfg *config.Config) *gin.Engine {
 	protected.POST("/tickets", handlers.CreateTicket)
 	protected.GET("/tickets", handlers.GetTickets)
 	protected.GET("/tickets/me", handlers.GetTickets)
+	protected.POST("/tickets/verify", handlers.VerifyTicket)
 	protected.DELETE("/tickets/:id", handlers.DeleteTicket)
 	protected.GET("/users/:id", handlers.GetUser)
 	protected.GET("/users/:id/events", handlers.GetUserEvents)
