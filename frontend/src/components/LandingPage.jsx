@@ -66,9 +66,9 @@ const LandingPage = () => {
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-white mb-2">Real-time Updates</h3>
+                        <h3 className="text-xl font-semibold text-white mb-2">QR Tickets</h3>
                         <p className="text-blue-100">
-                            Get instant notifications about event updates and ticket confirmations.
+                            Every booking comes with a QR code you can present at the entrance.
                         </p>
                     </div>
                 </div>
@@ -79,7 +79,7 @@ const LandingPage = () => {
                         Ready to Experience Amazing Events?
                     </h2>
                     <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-                        Join thousands of users who are already discovering and attending incredible events through GrabMySeat.
+                        Create an account to discover events and book your seat in a few clicks.
                     </p>
                     <Link
                         to="/register"
