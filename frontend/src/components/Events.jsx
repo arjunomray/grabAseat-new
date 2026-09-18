@@ -443,6 +443,8 @@ const Events = () => {
     const userId = localStorage.getItem('userId');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [activeFilters, setActiveFilters] = useState({
         priceRange: 'all',
         dateRange: 'all',
@@ -452,14 +454,18 @@ const Events = () => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
+                setLoadError('');
                 const response = await apiFetch('/events');
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`Request failed with status ${response.status}`);
                 }
                 const data = await response.json();
-                setEvents(data);
+                setEvents(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error('Error fetching events:', error);
+                setLoadError('Could not load events. Please try again.');
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -467,10 +473,10 @@ const Events = () => {
             try {
                 const response = await apiFetch(`/users/${userId}/tickets`);
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`Request failed with status ${response.status}`);
                 }
                 const data = await response.json();
-                setUserTickets(data);
+                setUserTickets(Array.isArray(data) ? data : []);
             } catch (error) {
                 console.error('Error fetching user tickets:', error);
             }
@@ -519,15 +525,17 @@ const Events = () => {
 
             // Date filter
             const eventDate = new Date(event.time);
-            const today = new Date();
+            const now = new Date();
+            const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
             const matchesDate = activeFilters.dateRange === 'all' ||
                 (activeFilters.dateRange === 'today' &&
-                    eventDate.toDateString() === today.toDateString()) ||
+                    eventDate.toDateString() === now.toDateString()) ||
                 (activeFilters.dateRange === 'week' &&
-                    eventDate <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)) ||
+                    eventDate >= now && eventDate <= weekAhead) ||
                 (activeFilters.dateRange === 'month' &&
-                    eventDate.getMonth() === today.getMonth() &&
-                    eventDate.getFullYear() === today.getFullYear());
+                    eventDate >= now &&
+                    eventDate.getMonth() === now.getMonth() &&
+                    eventDate.getFullYear() === now.getFullYear());
 
             // Available seats filter
             const matchesSeats = !activeFilters.seatsAvailable || event.seatsAvailable > 0;
@@ -570,7 +578,11 @@ const Events = () => {
 
             {/* Display filtered events */}
             <div className="grid gap-6">
-                {filteredEvents.length > 0 ? (
+                {isLoading ? (
+                    <div className="text-center py-12 text-gray-500">Loading events…</div>
+                ) : loadError ? (
+                    <div className="text-center py-12 bg-white rounded-xl shadow-md text-red-600">{loadError}</div>
+                ) : filteredEvents.length > 0 ? (
                     filteredEvents.map((event) => (
                         <div
                             key={event.id}

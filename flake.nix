@@ -32,7 +32,7 @@
           version = "0.1.0";
           src = ./frontend;
           nodejs = pkgs.nodejs_22;
-          npmDepsHash = "sha256-KOGMyJIbmxRV+8jvehs1BxHmI7zPmLOANKDy+/aVz94=";
+          npmDepsHash = "sha256-hNDBEt2i0J6QfjCynKsSVbVGbi2mNiZKkM40zfft9Sw=";
           installPhase = ''
             mkdir -p $out
             cp -r dist/. $out/
