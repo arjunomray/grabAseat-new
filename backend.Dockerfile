@@ -1,29 +1,35 @@
-FROM golang:1.23.4-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
-WORKDIR /app
-COPY go.* ./
-COPY . .
+WORKDIR /src
 
-# Install build dependencies
-RUN apk add --no-cache gcc musl-dev
+# goose is used at startup to apply migrations.
+RUN go install github.com/pressly/goose/v3/cmd/goose@v3.24.1
 
-# Download dependencies
+COPY go.mod go.sum ./
 RUN go mod download
 
-# Build the application
-RUN CGO_ENABLED=1 go build -o main .
+COPY . .
+RUN CGO_ENABLED=0 go build -trimpath -ldflags "-s -w" -o /out/eventer .
 
-# Final stage
-FROM alpine:3.19
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates \
+    && addgroup -S app \
+    && adduser -S -G app app
 
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apk add --no-cache ca-certificates
+COPY --from=builder /out/eventer /app/eventer
+COPY --from=builder /go/bin/goose /usr/local/bin/goose
+COPY migrations /app/migrations
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
-# Copy the binary from builder
-COPY --from=builder /app/main .
+USER app
 
 EXPOSE 8080
 
-CMD ["./main"]
+HEALTHCHECK --interval=10s --timeout=3s --retries=5 \
+    CMD wget -qO- http://localhost:8080/healthz || exit 1
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

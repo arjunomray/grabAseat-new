@@ -89,7 +89,16 @@ nix run   # runs `make dev` with the toolchain bundled
 
 ## Docker (optional)
 
-A `docker-compose.yml` is provided for a container workflow. It is currently development-oriented (the frontend runs the Vite dev server, and image hardening is still pending); the Nix path above is the supported way to run the project today.
+A `docker-compose.yml` is provided that builds production-style images: the backend applies migrations on startup and runs as a non-root user, and the frontend is served by nginx (which also proxies `/api` to the backend).
+
+```bash
+JWT_SECRET=change-me docker compose up --build
+```
+
+- UI: <http://localhost:5173>
+- API: <http://localhost:8080>
+
+Note: the Docker path is provided as an alternative to Nix and is not exercised by CI.
 
 ## Environment variables
 
