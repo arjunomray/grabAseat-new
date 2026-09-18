@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"arjunomray/eventer/config"
-	"arjunomray/eventer/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -33,6 +32,5 @@ func InitDatabase(cfg config.Database) {
 		os.Exit(1)
 	}
 
-	Db.AutoMigrate(&models.User{}, &models.Event{}, &models.Ticket{})
 	slog.Info("database connected")
 }

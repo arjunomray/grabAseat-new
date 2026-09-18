@@ -33,7 +33,7 @@ help: ## Show the available targets
 dev: db-start ## Run Postgres, the API, and the UI together
 	$(MAKE) -j2 backend frontend
 
-backend: ## Run the API locally (needs Postgres)
+backend: migrate ## Run the API locally (applies migrations first)
 	go run .
 
 frontend: ## Run the Vite dev server
@@ -59,7 +59,7 @@ db-reset: ## Stop the server and delete the local Postgres data
 
 ## --- database migrations -----------------------------------------------------
 
-migrate: ## Apply database migrations with goose
+migrate: db-start ## Apply database migrations with goose
 	@if [ -d migrations ]; then \
 		goose -dir migrations postgres "host=localhost port=$(PGPORT) user=$(PGUSER) password=$(PGPASSWORD) dbname=$(PGDATABASE) sslmode=disable" up; \
 	else \
