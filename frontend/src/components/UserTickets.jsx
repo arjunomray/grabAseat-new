@@ -6,7 +6,6 @@ import { apiFetch } from '../api';
 const UserTickets = () => {
     const { id } = useParams();
     const [tickets, setTickets] = useState([]);
-    const [events, setEvents] = useState({});
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -16,19 +15,14 @@ const UserTickets = () => {
 
             try {
                 const response = await apiFetch(`/users/${id}/tickets`);
-                const data = await response.json();
-                setTickets(data);
-
-                // Fetch event details for each ticket
-                const eventDetails = {};
-                for (const ticket of data) {
-                    const eventResponse = await apiFetch(`/events/${ticket.event_id}`);
-                    const eventData = await eventResponse.json();
-                    eventDetails[ticket.event_id] = eventData;
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
                 }
-                setEvents(eventDetails);
+                const data = await response.json();
+                setTickets(Array.isArray(data) ? data : []);
             } catch (error) {
-                console.error('Error fetching tickets or events:', error);
+                console.error('Error fetching tickets:', error);
+                setTickets([]);
             } finally {
                 setIsLoading(false);
             }
@@ -68,7 +62,7 @@ const UserTickets = () => {
                 ) : (
                     <div className="space-y-6">
                         {tickets.map((ticket) => {
-                            const event = events[ticket.event_id];
+                            const event = ticket.event;
                             return (
                                 <div
                                     key={ticket.id}

@@ -50,6 +50,7 @@ type Ticket struct {
 	UserID    uuid.UUID `json:"user_id" gorm:"type:uuid"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+	Event     *Event    `json:"event,omitempty" gorm:"foreignKey:EventID"`
 }
 
 func (t *Ticket) BeforeCreate(tx *gorm.DB) error {

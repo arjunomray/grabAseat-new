@@ -108,7 +108,10 @@ func GetTickets(c *gin.Context) {
 	}
 
 	var tickets []models.Ticket
-	if err := dbConfig.Db.Where("user_id = ?", claims.UserID).Order("created_at DESC").Find(&tickets).Error; err != nil {
+	if err := dbConfig.Db.Preload("Event").
+		Where("user_id = ?", claims.UserID).
+		Order("created_at DESC").
+		Find(&tickets).Error; err != nil {
 		api.Internal(c, err)
 		return
 	}
@@ -176,15 +179,14 @@ func GetUserTickets(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := dbConfig.Db.Preload("Tickets").First(&user, userID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			api.NotFound(c, "User not found")
-			return
-		}
+	var tickets []models.Ticket
+	if err := dbConfig.Db.Preload("Event").
+		Where("user_id = ?", userID).
+		Order("created_at DESC").
+		Find(&tickets).Error; err != nil {
 		api.Internal(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, user.Tickets)
+	c.JSON(http.StatusOK, tickets)
 }
