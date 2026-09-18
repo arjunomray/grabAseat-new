@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"arjunomray/eventer/api"
-	"arjunomray/eventer/models"
 	"arjunomray/eventer/utils"
 	"strings"
 
@@ -26,19 +25,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		c.Set(claimsKey, claims)
-		c.Next()
-	}
-}
-
-// RequireAdmin allows only administrators through. It must run after
-// AuthMiddleware.
-func RequireAdmin() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		claims, ok := ClaimsFrom(c)
-		if !ok || claims.Role != models.RoleAdmin {
-			api.Forbidden(c, "Administrator access required")
-			return
-		}
 		c.Next()
 	}
 }

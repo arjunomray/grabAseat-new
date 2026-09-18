@@ -131,22 +131,27 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 | `POST` | `/api/v1/events` | ✓ | Create an event |
 | `GET` | `/api/v1/events` | ✓ | List events |
 | `GET` | `/api/v1/events/:id` | ✓ | Get one event |
+| `GET` | `/api/v1/events/:id/admins` | ✓ | List an event's creator and admins |
+| `POST` | `/api/v1/events/:id/admins` | ✓ | Add an admin by email (creator only) |
+| `DELETE` | `/api/v1/events/:id/admins/:userId` | ✓ | Remove an admin (creator only) |
 | `POST` | `/api/v1/tickets` | ✓ | Claim a ticket (supports an `Idempotency-Key` header for safe retries) |
 | `GET` | `/api/v1/tickets` | ✓ | List the caller's tickets |
 | `GET` | `/api/v1/tickets/me` | ✓ | Alias for the caller's tickets |
-| `POST` | `/api/v1/tickets/verify` | ✓ | Mark a ticket as used (QR check-in) |
+| `POST` | `/api/v1/tickets/verify` | ✓ | Mark a ticket as used (event creator/admin only) |
 | `DELETE` | `/api/v1/tickets/:id` | ✓ | Cancel one of your tickets |
 | `GET` | `/api/v1/users/:id` | ✓ | User profile |
-| `GET` | `/api/v1/users/:id/events` | ✓ | Events a user created or registered for |
+| `GET` | `/api/v1/users/:id/events` | ✓ | Events a user created, registered for, or administers |
 | `GET` | `/api/v1/users/:id/tickets` | ✓ | Tickets for a user |
 
-> API routes are versioned under `/api/v1` (including the SSE stream at `/api/v1/stream`); `/healthz` and `/readyz` stay unversioned. Admin-only endpoints require a user whose `role` is `admin`; grant it directly with `UPDATE users SET role = 'admin' WHERE email = 'you@example.com';`.
+> API routes are versioned under `/api/v1` (including the SSE stream at `/api/v1/stream`); `/healthz` and `/readyz` stay unversioned. There is no global admin: whoever creates an event is its first admin, and can add other admins by email. Only the creator can add or remove admins, and the creator cannot be removed. Ticket verification is restricted to an event's creator and admins.
 
 ## Data model
 
-- **User** — `id` (UUID), `name`, `email` (unique), `password`
+- **User** — `id` (UUID), `name`, `email` (unique), `password` (bcrypt hash)
 - **Event** — `id`, `created_by`, `name`, `description`, `time` (`timestamptz`), `location`, `price_cents` (integer minor units), `seats_available`, `tags`
-- **Ticket** — `id`, `event_id`, `user_id` (a registration connecting a user to an event)
+- **Ticket** — `id`, `event_id`, `user_id`, `code` (opaque UUID in the QR), `status` (`valid`/`used`), `used_at`
+- **EventAdmin** — `(event_id, user_id)` additional admins; the creator is an implicit admin
+- **IdempotencyKey** — `(user_id, key)` → ticket, so retried bookings return the same ticket
 
 ## Testing
 
@@ -160,10 +165,12 @@ Handler tests run against a real PostgreSQL database (`eventer_test`), so `make 
 ## Design notes and tradeoffs
 
 - **Single service, single SPA.** No microservices; the API and UI are simple to run and reason about, at the cost of one deployable handling everything.
-- **GORM over hand-written SQL.** Faster to build CRUD, but schema management is moving from `AutoMigrate` to versioned goose migrations so changes are reviewable and reversible.
+- **GORM over hand-written SQL.** Faster to build CRUD; the schema is now managed by versioned goose migrations (AutoMigrate was removed), so changes are reviewable and reversible.
+- **Money as integer minor units.** `price_cents` is an `int64`, avoiding floating-point rounding; the API and UI convert at the edges.
+- **Time as `timestamptz`.** Events store an absolute instant rather than a string, so ordering, filtering, and timezones behave correctly.
+- **Per-event authorization.** There is no global role: the event creator is the first admin and controls the admin list. Verification is scoped to an event's admins, and check-in is a single atomic status transition.
 - **JWT in `localStorage`.** Simple and stateless; it does mean XSS is a real threat and there is no server-side revocation or refresh yet.
-- **Money as `float64`, time as `string`.** Convenient initially, but both will become integer minor units and `timestamptz` respectively.
-- **Dev-first tooling.** The Nix flake and Makefile are the primary workflow; production container images are a later step.
+- **Dev-first tooling.** The Nix flake and Makefile are the primary workflow. The Docker images are production-style (nginx frontend, non-root backend, migrations on startup) but are not exercised by CI.
 
 ## License
 

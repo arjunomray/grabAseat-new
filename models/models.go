@@ -8,18 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	RoleUser  = "user"
-	RoleAdmin = "admin"
-)
-
 // Models
 type User struct {
 	ID        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email" gorm:"unique"`
 	Password  string    `json:"-"`
-	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Tickets   []Ticket  `json:"tickets" gorm:"foreignKey:UserID"`
@@ -76,6 +70,15 @@ func (t *Ticket) BeforeCreate(tx *gorm.DB) error {
 		t.Status = TicketStatusValid
 	}
 	return nil
+}
+
+// EventAdmin is an additional admin for an event. The event creator is always
+// an admin implicitly (via Event.CreatedBy) and is not stored here.
+type EventAdmin struct {
+	EventID   uuid.UUID `json:"event_id" gorm:"type:uuid;primaryKey"`
+	UserID    uuid.UUID `json:"user_id" gorm:"type:uuid;primaryKey"`
+	CreatedAt time.Time `json:"createdAt"`
+	User      *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
 }
 
 // IdempotencyKey records a booking request so retries return the same ticket.

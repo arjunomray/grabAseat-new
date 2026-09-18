@@ -57,12 +57,11 @@ func mintTokens(t *testing.T, n int) []string {
 			Name:     fmt.Sprintf("user-%d", i),
 			Email:    fmt.Sprintf("race-%d-%d@example.com", i, uuid.New().ID()),
 			Password: "x",
-			Role:     models.RoleUser,
 		}
 		if err := dbConfig.Db.Create(&user).Error; err != nil {
 			t.Fatalf("create user: %v", err)
 		}
-		token, err := utils.GenerateJWT(user.ID, user.Role)
+		token, err := utils.GenerateJWT(user.ID)
 		if err != nil {
 			t.Fatalf("generate token: %v", err)
 		}
@@ -129,5 +128,65 @@ func TestConcurrentDuplicateBooking(t *testing.T) {
 	dbConfig.Db.Model(&models.Ticket{}).Where("event_id = ?", eventID).Count(&ticketCount)
 	if ticketCount != 1 {
 		t.Fatalf("tickets in database=%d, want 1", ticketCount)
+	}
+}
+
+func verifyConcurrently(t *testing.T, token string, codes []string) map[int]int {
+	t.Helper()
+
+	var wg sync.WaitGroup
+	statuses := make(chan int, len(codes))
+
+	for _, code := range codes {
+		wg.Add(1)
+		go func(code string) {
+			defer wg.Done()
+			body, _ := json.Marshal(map[string]string{"code": code})
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/tickets/verify", bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer "+token)
+			rec := httptest.NewRecorder()
+			engine.ServeHTTP(rec, req)
+			statuses <- rec.Code
+		}(code)
+	}
+
+	wg.Wait()
+	close(statuses)
+
+	counts := map[int]int{}
+	for code := range statuses {
+		counts[code]++
+	}
+	return counts
+}
+
+func TestConcurrentVerificationOnlyOnce(t *testing.T) {
+	resetDB(t)
+	register(t, "Creator", "creator@example.com")
+	register(t, "Booker", "booker@example.com")
+	creator, _ := login(t, "creator@example.com")
+	booker, _ := login(t, "booker@example.com")
+
+	eventID := createEvent(t, creator, "2027-01-01T10:00:00Z", 5)
+	rec, body := request(t, http.MethodPost, "/api/v1/tickets", booker, map[string]string{"event_id": eventID})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("book: got %d", rec.Code)
+	}
+	code, _ := body["code"].(string)
+
+	const scanners = 20
+	codes := make([]string, scanners)
+	for i := range codes {
+		codes[i] = code
+	}
+
+	counts := verifyConcurrently(t, creator, codes)
+
+	if counts[http.StatusOK] != 1 {
+		t.Fatalf("successful verifications=%d, want exactly 1 (all statuses: %v)", counts[http.StatusOK], counts)
+	}
+	if counts[http.StatusConflict] != scanners-1 {
+		t.Fatalf("conflicts=%d, want %d (all statuses: %v)", counts[http.StatusConflict], scanners-1, counts)
 	}
 }

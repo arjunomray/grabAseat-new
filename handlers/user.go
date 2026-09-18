@@ -87,9 +87,20 @@ func GetUserEvents(c *gin.Context) {
 		return
 	}
 
+	// Get events the user was added to as an admin
+	var adminEvents []models.Event
+	if err := dbConfig.Db.
+		Joins("JOIN event_admins ON event_admins.event_id = events.id").
+		Where("event_admins.user_id = ?", userID).
+		Find(&adminEvents).Error; err != nil {
+		api.Internal(c, err)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"created_events":    createdEvents,
 		"registered_events": registeredEvents,
+		"admin_events":      adminEvents,
 	})
 }
 
@@ -123,7 +134,6 @@ func RegisterUser(c *gin.Context) {
 		Name:     userInput.Name,
 		Email:    email,
 		Password: string(hash),
-		Role:     models.RoleUser,
 	}
 
 	if err := dbConfig.Db.Create(&user).Error; err != nil {
@@ -167,7 +177,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateJWT(user.ID, user.Role)
+	token, err := utils.GenerateJWT(user.ID)
 	if err != nil {
 		api.Internal(c, err)
 		return

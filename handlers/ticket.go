@@ -219,8 +219,15 @@ type VerifyTicketInput struct {
 }
 
 // VerifyTicket marks a ticket as used. The QR code carries the ticket's opaque
-// code, so it cannot be derived from the ticket ID.
+// code, so it cannot be derived from the ticket ID. Only the event's creator or
+// an admin of that event may verify its tickets.
 func VerifyTicket(c *gin.Context) {
+	claims, ok := middleware.ClaimsFrom(c)
+	if !ok {
+		api.Unauthorized(c, "Unauthorized")
+		return
+	}
+
 	var input VerifyTicketInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		api.BadRequest(c, err.Error())
@@ -237,19 +244,34 @@ func VerifyTicket(c *gin.Context) {
 		return
 	}
 
-	if ticket.Status == models.TicketStatusUsed {
+	allowed, err := isEventAdmin(ticket.EventID, claims.UserID)
+	if err != nil {
+		api.Internal(c, err)
+		return
+	}
+	if !allowed {
+		api.Forbidden(c, "You are not an admin of this event")
+		return
+	}
+
+	// Conditional update: the status check and the write are a single atomic
+	// statement, so two concurrent scans cannot both mark the ticket used.
+	now := time.Now()
+	res := dbConfig.Db.Model(&models.Ticket{}).
+		Where("code = ? AND status = ?", input.Code, models.TicketStatusValid).
+		Updates(map[string]any{
+			"status":  models.TicketStatusUsed,
+			"used_at": now,
+		})
+	if res.Error != nil {
+		api.Internal(c, res.Error)
+		return
+	}
+	if res.RowsAffected == 0 {
 		api.Conflict(c, "Ticket has already been used")
 		return
 	}
 
-	now := time.Now()
-	if err := dbConfig.Db.Model(&ticket).Updates(map[string]any{
-		"status":  models.TicketStatusUsed,
-		"used_at": now,
-	}).Error; err != nil {
-		api.Internal(c, err)
-		return
-	}
 	ticket.Status = models.TicketStatusUsed
 	ticket.UsedAt = &now
 
