@@ -64,6 +64,7 @@ func main() {
 	protected.POST("/tickets", handlers.CreateTicket)
 	protected.GET("/tickets", handlers.GetTickets)
 	protected.GET("/tickets/me", handlers.GetTickets)
+	protected.DELETE("/tickets/:id", handlers.DeleteTicket)
 	protected.GET("/users/:id", handlers.GetUser)
 	protected.GET("/users/:id/events", handlers.GetUserEvents)
 	protected.GET("/users/:id/tickets", handlers.GetUserTickets)

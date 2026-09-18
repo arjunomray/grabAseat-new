@@ -117,14 +117,42 @@ func GetTickets(c *gin.Context) {
 	c.JSON(http.StatusOK, tickets)
 }
 
-func DeleteTickets(c *gin.Context) {
-	var ticket models.Ticket
-	if err := c.ShouldBindJSON(&ticket); err != nil {
-		api.BadRequest(c, err.Error())
+func DeleteTicket(c *gin.Context) {
+	claims, ok := middleware.ClaimsFrom(c)
+	if !ok {
+		api.Unauthorized(c, "Unauthorized")
 		return
 	}
 
-	if err := dbConfig.Db.Delete(&ticket).Error; err != nil {
+	ticketID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		api.BadRequest(c, "Invalid ticket ID")
+		return
+	}
+
+	var ticket models.Ticket
+	if err := dbConfig.Db.First(&ticket, ticketID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			api.NotFound(c, "Ticket not found")
+			return
+		}
+		api.Internal(c, err)
+		return
+	}
+
+	if ticket.UserID != claims.UserID {
+		api.Forbidden(c, "You can only delete your own tickets")
+		return
+	}
+
+	if err := dbConfig.Db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Delete(&ticket).Error; err != nil {
+			return err
+		}
+		return tx.Model(&models.Event{}).
+			Where("id = ?", ticket.EventID).
+			Update("seats_available", gorm.Expr("seats_available + 1")).Error
+	}); err != nil {
 		api.Internal(c, err)
 		return
 	}
