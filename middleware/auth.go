@@ -1,11 +1,10 @@
 package middleware
 
 import (
-	"strings"
-
 	"arjunomray/eventer/api"
 	"arjunomray/eventer/models"
 	"arjunomray/eventer/utils"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )

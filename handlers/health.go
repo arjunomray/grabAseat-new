@@ -1,13 +1,12 @@
 package handlers
 
 import (
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/dbConfig"
 	"context"
 	"log/slog"
 	"net/http"
 	"time"
-
-	"arjunomray/eventer/api"
-	"arjunomray/eventer/dbConfig"
 
 	"github.com/gin-gonic/gin"
 )

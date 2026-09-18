@@ -3,6 +3,9 @@
 package handlers_test
 
 import (
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/models"
+	"arjunomray/eventer/utils"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -10,10 +13,6 @@ import (
 	"net/http/httptest"
 	"sync"
 	"testing"
-
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/models"
-	"arjunomray/eventer/utils"
 
 	"github.com/google/uuid"
 )

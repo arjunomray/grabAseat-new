@@ -1,14 +1,13 @@
 package handlers
 
 import (
+	"arjunomray/eventer/realtime"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-
-	"arjunomray/eventer/realtime"
 )
 
 // StreamEvents streams seat-availability updates to the client as
@@ -41,10 +40,14 @@ func StreamEvents(c *gin.Context) {
 			if err != nil {
 				continue
 			}
-			fmt.Fprintf(c.Writer, "data: %s\n\n", data)
+			if _, err := fmt.Fprintf(c.Writer, "data: %s\n\n", data); err != nil {
+				return
+			}
 			c.Writer.Flush()
 		case <-ping.C:
-			fmt.Fprint(c.Writer, ": ping\n\n")
+			if _, err := fmt.Fprint(c.Writer, ": ping\n\n"); err != nil {
+				return
+			}
 			c.Writer.Flush()
 		}
 	}

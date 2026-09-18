@@ -1,11 +1,10 @@
 package middleware
 
 import (
+	"arjunomray/eventer/api"
 	"log/slog"
 	"net/http"
 	"time"
-
-	"arjunomray/eventer/api"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
