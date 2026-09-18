@@ -3,6 +3,9 @@
 package handlers_test
 
 import (
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/models"
+	"arjunomray/eventer/utils"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -12,10 +15,6 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/models"
-	"arjunomray/eventer/utils"
 )
 
 func bookConcurrently(t *testing.T, eventID string, tokens []string) map[int]int {

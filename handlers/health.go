@@ -1,15 +1,14 @@
 package handlers
 
 import (
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/dbConfig"
 	"context"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-
-	"arjunomray/eventer/api"
-	"arjunomray/eventer/dbConfig"
 )
 
 // Healthz reports that the process is running (liveness probe).

@@ -1,6 +1,10 @@
 package handlers
 
 import (
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/middleware"
+	"arjunomray/eventer/models"
 	"errors"
 	"net/http"
 	"time"
@@ -8,11 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-
-	"arjunomray/eventer/api"
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/middleware"
-	"arjunomray/eventer/models"
 )
 
 type EventInput struct {

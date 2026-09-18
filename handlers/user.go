@@ -1,6 +1,11 @@
 package handlers
 
 import (
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/middleware"
+	"arjunomray/eventer/models"
+	"arjunomray/eventer/utils"
 	"errors"
 	"net/http"
 	"strings"
@@ -9,12 +14,6 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-
-	"arjunomray/eventer/api"
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/middleware"
-	"arjunomray/eventer/models"
-	"arjunomray/eventer/utils"
 )
 
 // requireSelf returns the authenticated user, or writes a 401/403 and reports

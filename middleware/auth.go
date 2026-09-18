@@ -1,12 +1,11 @@
 package middleware
 
 import (
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-
-	"arjunomray/eventer/api"
-	"arjunomray/eventer/utils"
 )
 
 const claimsKey = "claims"

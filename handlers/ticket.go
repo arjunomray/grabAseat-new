@@ -1,6 +1,10 @@
 package handlers
 
 import (
+	"arjunomray/eventer/api"
+	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/middleware"
+	"arjunomray/eventer/models"
 	"errors"
 	"net/http"
 	"time"
@@ -9,11 +13,6 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-
-	"arjunomray/eventer/api"
-	"arjunomray/eventer/dbConfig"
-	"arjunomray/eventer/middleware"
-	"arjunomray/eventer/models"
 )
 
 var (

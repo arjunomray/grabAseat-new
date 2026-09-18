@@ -2,12 +2,12 @@
 package router
 
 import (
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-
 	"arjunomray/eventer/config"
 	"arjunomray/eventer/handlers"
 	"arjunomray/eventer/middleware"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 // New builds the application router.

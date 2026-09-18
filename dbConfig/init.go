@@ -1,11 +1,10 @@
 package dbConfig
 
 import (
+	"arjunomray/eventer/config"
 	"log/slog"
 	"os"
 	"time"
-
-	"arjunomray/eventer/config"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

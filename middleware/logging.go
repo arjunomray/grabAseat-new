@@ -1,14 +1,13 @@
 package middleware
 
 import (
+	"arjunomray/eventer/api"
 	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-
-	"arjunomray/eventer/api"
 )
 
 // RequestID ensures every request has an ID. It reuses the incoming
