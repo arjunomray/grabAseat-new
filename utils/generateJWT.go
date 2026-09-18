@@ -9,6 +9,12 @@ import (
 
 var jwtKey = []byte("your_secret_key")
 
+// SetJWTSecret sets the key used to sign and verify tokens. It is called once
+// at startup, after configuration has been validated.
+func SetJWTSecret(secret string) {
+	jwtKey = []byte(secret)
+}
+
 type Claims struct {
 	UserID uuid.UUID `json:"user_id"`
 	jwt.StandardClaims

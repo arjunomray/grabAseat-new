@@ -93,7 +93,7 @@ A `docker-compose.yml` is provided for a container workflow. It is currently dev
 
 ## Environment variables
 
-The service reads these from the process environment. Copy `.env.example` to `.env` for reference; the Makefile already supplies the same defaults, so no `.env` file is required for `make dev`.
+The service loads an optional `.env` file at startup, then reads these variables from the process environment. Copy `.env.example` to `.env` and adjust; the Makefile supplies the same defaults, so no `.env` file is required for `make dev`.
 
 | Variable | Default | Description |
 |---|---|---|
@@ -102,7 +102,9 @@ The service reads these from the process environment. Copy `.env.example` to `.e
 | `DB_USER` | `postgres` | Database user |
 | `DB_PASSWORD` | `postgres` | Database password |
 | `DB_NAME` | `eventer` | Database name |
-| `PORT` | `8080` | API port (wired through in a later change) |
+| `PORT` | `8080` | API port |
+| `JWT_SECRET` | – | Required; secret used to sign JWTs |
+| `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed origins |
 
 ## API
 
