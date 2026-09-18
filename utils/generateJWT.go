@@ -3,11 +3,13 @@ package utils
 import (
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
-var jwtKey = []byte("your_secret_key")
+const tokenTTL = 24 * time.Hour
+
+var jwtKey []byte
 
 // SetJWTSecret sets the key used to sign and verify tokens. It is called once
 // at startup, after configuration has been validated.
@@ -17,15 +19,16 @@ func SetJWTSecret(secret string) {
 
 type Claims struct {
 	UserID uuid.UUID `json:"user_id"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func GenerateJWT(userID uuid.UUID) (string, error) {
-	expirationTime := time.Now().Add(24 * time.Hour)
+	now := time.Now()
 	claims := &Claims{
 		UserID: userID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(tokenTTL)),
 		},
 	}
 
