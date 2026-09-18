@@ -28,9 +28,11 @@ dist-ssr/
 # Build directories
 frontend/dist/
 frontend/.vite/
+bin/
 
 # Ignore database files
 data.db
+.postgres/
 
 # Ignore Swagger generated files
 docs/docs.go
