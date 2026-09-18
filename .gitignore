@@ -30,6 +30,11 @@ frontend/dist/
 frontend/.vite/
 bin/
 
+# Nix
+result
+result-*
+.direnv/
+
 # Ignore database files
 data.db
 .postgres/
@@ -40,6 +45,7 @@ docs/swagger.json
 docs/swagger.yaml
 
 # Ignore Go build files
+/eventer
 *.exe
 *.exe~
 *.dll

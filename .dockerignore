@@ -1,6 +1,13 @@
 .git
 .gitignore
 README.md
+TASKS.md
+.env
+.env.example
 **/node_modules
 **/dist
-.env
+eventer
+bin/
+.postgres/
+result
+result-*
