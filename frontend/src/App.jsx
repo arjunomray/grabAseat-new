@@ -6,6 +6,7 @@ import Events from './components/Events';
 import UserTickets from './components/UserTickets';
 import Profile from './components/Profile';
 import LandingPage from './components/LandingPage';
+import { isAuthenticated } from './api';
 
 const NavLink = ({ to, children }) => {
   const location = useLocation();
@@ -25,16 +26,26 @@ const NavLink = ({ to, children }) => {
 };
 
 const App = () => {
-  const [userId, setUserId] = useState(localStorage.getItem('userId'));
+  const [userId, setUserId] = useState(() =>
+    isAuthenticated() ? localStorage.getItem('userId') : null
+  );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setUserId(localStorage.getItem('userId'));
+    const syncSession = () => {
+      if (isAuthenticated()) {
+        setUserId(localStorage.getItem('userId'));
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        setUserId(null);
+      }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    syncSession();
+
+    window.addEventListener('storage', syncSession);
+    return () => window.removeEventListener('storage', syncSession);
   }, []);
 
   const handleLogout = () => {
