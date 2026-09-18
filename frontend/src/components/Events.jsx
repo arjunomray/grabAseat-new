@@ -147,6 +147,20 @@ const CreateEventModal = ({ isOpen, onClose }) => {
         });
     };
 
+    useEffect(() => {
+        if (!isOpen) {
+            setFormData({
+                name: '',
+                time: '',
+                description: '',
+                location: '',
+                seatsAvailable: '',
+                price: ''
+            });
+            setTags([]);
+        }
+    }, [isOpen]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {

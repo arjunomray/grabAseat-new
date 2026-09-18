@@ -196,7 +196,7 @@ export const Profile = ({ setUserId }) => {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Events I&apos;ve Created</h2>
             <button
-              onClick={() => navigate('/events/create')}
+              onClick={() => navigate('/events')}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Create New Event
@@ -211,7 +211,7 @@ export const Profile = ({ setUserId }) => {
               <EmptyState
                 message="You haven't created any events yet"
                 actionText="Create Your First Event"
-                onAction={() => navigate('/events/create')}
+                onAction={() => navigate('/events')}
               />
             )}
           </div>

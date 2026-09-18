@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } f
 import { useState, useEffect } from 'react';
 import Register from './components/Register';
 import Login from './components/Login';
-import CreateEvent from './components/CreateEvent';
 import Events from './components/Events';
 import UserTickets from './components/UserTickets';
 import Profile from './components/Profile';
@@ -70,7 +69,6 @@ const App = () => {
                   ) : (
                     <>
 
-                      <NavLink to="/events/create">Create Events</NavLink>
                       <NavLink to="/events">Events</NavLink>
                       <NavLink to={`/user-tickets/${userId}`}>Your Tickets</NavLink>
                       <NavLink to="/profile">
@@ -124,9 +122,6 @@ const App = () => {
                   ) : (
                     <>
 
-                      <Link to="/events/create" className="block px-3 py-2 rounded-md text-white hover:bg-blue-800">
-                        Create Event
-                      </Link>
                       <Link to="/events" className="block px-3 py-2 rounded-md text-white hover:bg-blue-800">
                         Events
                       </Link>
@@ -157,10 +152,6 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login setUserId={setUserId} />} />
 
-              <Route
-                path="/events/create"
-                element={userId ? <CreateEvent /> : <Navigate to="/" />}
-              />
               <Route
                 path="/events"
                 element={userId ? <Events /> : <Navigate to="/" />}
