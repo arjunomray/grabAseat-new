@@ -1,9 +1,78 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { apiFetch, API_BASE } from '../api';
 import { formatPrice } from '../format';
 
 const EventModal = ({ event, isOpen, onClose, isRegistered, onRegister }) => {
+    const [adminData, setAdminData] = useState(null);
+    const [newAdminEmail, setNewAdminEmail] = useState('');
+    const [adminError, setAdminError] = useState('');
+    const [isAdminBusy, setIsAdminBusy] = useState(false);
+
+    const eventId = event?.id;
+
+    const loadAdmins = useCallback(async () => {
+        if (!eventId) return;
+        try {
+            const response = await apiFetch(`/events/${eventId}/admins`);
+            if (!response.ok) {
+                setAdminData(null);
+                return;
+            }
+            setAdminData(await response.json());
+        } catch {
+            setAdminData(null);
+        }
+    }, [eventId]);
+
+    useEffect(() => {
+        setAdminData(null);
+        setAdminError('');
+        setNewAdminEmail('');
+        if (isOpen) loadAdmins();
+    }, [isOpen, loadAdmins]);
+
     if (!isOpen) return null;
+
+    const handleAddAdmin = async (e) => {
+        e.preventDefault();
+        setAdminError('');
+        setIsAdminBusy(true);
+        try {
+            const response = await apiFetch(`/events/${eventId}/admins`, {
+                method: 'POST',
+                body: JSON.stringify({ email: newAdminEmail }),
+            });
+            const body = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                setAdminError(body.error || 'Could not add admin.');
+                return;
+            }
+            setNewAdminEmail('');
+            await loadAdmins();
+        } catch {
+            setAdminError('Could not add admin.');
+        } finally {
+            setIsAdminBusy(false);
+        }
+    };
+
+    const handleRemoveAdmin = async (userId) => {
+        setAdminError('');
+        setIsAdminBusy(true);
+        try {
+            const response = await apiFetch(`/events/${eventId}/admins/${userId}`, { method: 'DELETE' });
+            if (!response.ok) {
+                const body = await response.json().catch(() => ({}));
+                setAdminError(body.error || 'Could not remove admin.');
+                return;
+            }
+            await loadAdmins();
+        } catch {
+            setAdminError('Could not remove admin.');
+        } finally {
+            setIsAdminBusy(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -94,6 +163,61 @@ const EventModal = ({ event, isOpen, onClose, isRegistered, onRegister }) => {
                                     </span>
                                 ))}
                             </div>
+                        </div>
+                    )}
+
+                    {/* Admins */}
+                    {adminData && (
+                        <div className="space-y-3">
+                            <h3 className="text-lg font-medium text-gray-900">Admins</h3>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">{adminData.creator.name}</p>
+                                        <p className="text-xs text-gray-500">{adminData.creator.email}</p>
+                                    </div>
+                                    <span className="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">Creator</span>
+                                </div>
+                                {adminData.admins.map((admin) => (
+                                    <div key={admin.id} className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900">{admin.name}</p>
+                                            <p className="text-xs text-gray-500">{admin.email}</p>
+                                        </div>
+                                        {adminData.canManage && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveAdmin(admin.id)}
+                                                disabled={isAdminBusy}
+                                                className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {adminData.canManage && (
+                                <form onSubmit={handleAddAdmin} className="flex gap-2">
+                                    <input
+                                        type="email"
+                                        required
+                                        value={newAdminEmail}
+                                        onChange={(e) => setNewAdminEmail(e.target.value)}
+                                        placeholder="Add admin by email"
+                                        className="flex-grow p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={isAdminBusy}
+                                        className="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                    >
+                                        Add
+                                    </button>
+                                </form>
+                            )}
+                            {adminError && <p className="text-sm text-red-600">{adminError}</p>}
                         </div>
                     )}
                 </div>
