@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Register from './components/Register';
 import Login from './components/Login';
 import Events from './components/Events';
+import CheckIn from './components/CheckIn';
 import UserTickets from './components/UserTickets';
 import Profile from './components/Profile';
 import LandingPage from './components/LandingPage';
@@ -73,6 +74,7 @@ const App = () => {
 
                 <div className="hidden md:flex items-center space-x-2">
                   <NavLink to="/events">Events</NavLink>
+                  <NavLink to="/check-in">Check-in</NavLink>
                   <NavLink to={`/user-tickets/${userId}`}>Your Tickets</NavLink>
                   <NavLink to="/profile">
                     <div className="flex items-center space-x-2">
@@ -114,6 +116,9 @@ const App = () => {
                   <Link to="/events" className="block px-3 py-2 rounded-md text-white hover:bg-blue-800">
                     Events
                   </Link>
+                  <Link to="/check-in" className="block px-3 py-2 rounded-md text-white hover:bg-blue-800">
+                    Check-in
+                  </Link>
                   <Link to={`/user-tickets/${userId}`} className="block px-3 py-2 rounded-md text-white hover:bg-blue-800">
                     Your Tickets
                   </Link>
@@ -142,6 +147,10 @@ const App = () => {
               <Route
                 path="/events"
                 element={userId ? <Events /> : <Navigate to="/" />}
+              />
+              <Route
+                path="/check-in"
+                element={userId ? <CheckIn /> : <Navigate to="/" />}
               />
               <Route
                 path="/user-tickets/:id"
