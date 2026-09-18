@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
+import { formatPrice } from "../format";
 
 const EventCard = ({ event }) => (
   <div className="bg-gray-50 rounded-xl p-4 hover:shadow-md transition-shadow duration-200">
@@ -27,7 +28,7 @@ const EventCard = ({ event }) => (
       </div>
       <div>
         <h3 className="text-sm font-medium text-gray-500">Price</h3>
-        <p className="mt-1 text-sm text-gray-900">${(event.priceCents / 100).toFixed(2)}</p>
+        <p className="mt-1 text-sm text-gray-900">{formatPrice(event.priceCents)}</p>
       </div>
       <div>
         <h3 className="text-sm font-medium text-gray-500">Available Seats</h3>

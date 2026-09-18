@@ -35,11 +35,8 @@ const Register = () => {
                 setError(data.error || 'Registration failed. Please try again.');
             }
         } catch (error) {
-            if (error.message === 'User already exists') {
-                setError(error.message);
-            } else {
-                setError('An error occurred. Please try again.');
-            }
+            console.error('Error:', error);
+            setError('An error occurred. Please try again.');
         } finally {
             setIsLoading(false);
         }
