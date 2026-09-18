@@ -149,7 +149,7 @@ const CreateEventModal = ({ isOpen, onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:8080/events', {
+            const response = await fetch('http://localhost:8080/api/v1/events', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -440,7 +440,7 @@ const Events = () => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const response = await fetch('http://localhost:8080/events', {
+                const response = await fetch('http://localhost:8080/api/v1/events', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -457,7 +457,7 @@ const Events = () => {
 
         const fetchUserTickets = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/tickets/${userId}`, {
+                const response = await fetch(`http://localhost:8080/api/v1/users/${userId}/tickets`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -478,7 +478,7 @@ const Events = () => {
 
     const handleRegister = async (eventId) => {
         try {
-            const response = await fetch('http://localhost:8080/tickets', {
+            const response = await fetch('http://localhost:8080/api/v1/tickets', {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -656,7 +656,7 @@ const Events = () => {
                         // Refresh events after successful creation
                         const fetchEvents = async () => {
                             try {
-                                const response = await fetch('http://localhost:8080/events', {
+                                const response = await fetch('http://localhost:8080/api/v1/events', {
                                     headers: {
                                         Authorization: `Bearer ${localStorage.getItem('token')}`
                                     }

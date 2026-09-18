@@ -92,7 +92,7 @@ export const Profile = ({ setUserId }) => {
       const token = localStorage.getItem('token');
       try {
         const response = await fetch(
-          `http://localhost:8080/users/${localStorage.getItem('userId')}`,
+          `http://localhost:8080/api/v1/users/${localStorage.getItem('userId')}`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -117,7 +117,7 @@ export const Profile = ({ setUserId }) => {
       const token = localStorage.getItem('token');
       try {
         const response = await fetch(
-          `http://localhost:8080/users/${localStorage.getItem('userId')}/events`,
+          `http://localhost:8080/api/v1/users/${localStorage.getItem('userId')}/events`,
           {
             headers: {
               'Authorization': `Bearer ${token}`,

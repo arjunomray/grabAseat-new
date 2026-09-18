@@ -83,7 +83,7 @@ const CreateEvent = () => {
         e.preventDefault();
         setSuccessMessage('');
         try {
-            const response = await fetch('http://localhost:8080/events', {
+            const response = await fetch('http://localhost:8080/api/v1/events', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,

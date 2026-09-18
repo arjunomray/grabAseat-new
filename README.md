@@ -114,18 +114,18 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 |---|---|---|---|
 | `GET` | `/healthz` | – | Liveness probe: the process is running |
 | `GET` | `/readyz` | – | Readiness probe: the database is reachable |
-| `POST` | `/register` | – | Create an account |
-| `POST` | `/login` | – | Exchange credentials for a JWT |
-| `POST` | `/events` | ✓ | Create an event |
-| `GET` | `/events` | ✓ | List events |
-| `GET` | `/events/:id` | ✓ | Get one event |
-| `POST` | `/tickets` | ✓ | Claim a ticket |
-| `GET` | `/tickets` | ✓ | List tickets |
-| `GET` | `/tickets/:id` | ✓ | Tickets for a user |
-| `GET` | `/users/:id` | ✓ | User profile |
-| `GET` | `/users/:id/events` | ✓ | Events a user created or registered for |
+| `POST` | `/api/v1/register` | – | Create an account |
+| `POST` | `/api/v1/login` | – | Exchange credentials for a JWT |
+| `POST` | `/api/v1/events` | ✓ | Create an event |
+| `GET` | `/api/v1/events` | ✓ | List events |
+| `GET` | `/api/v1/events/:id` | ✓ | Get one event |
+| `POST` | `/api/v1/tickets` | ✓ | Claim a ticket |
+| `GET` | `/api/v1/tickets` | ✓ | List tickets |
+| `GET` | `/api/v1/users/:id` | ✓ | User profile |
+| `GET` | `/api/v1/users/:id/events` | ✓ | Events a user created or registered for |
+| `GET` | `/api/v1/users/:id/tickets` | ✓ | Tickets for a user |
 
-> The API is currently unversioned; routes will move under `/api/v1` as part of the ongoing cleanup.
+> API routes are versioned under `/api/v1`; `/healthz` and `/readyz` stay unversioned.
 
 ## Data model
 

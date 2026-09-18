@@ -51,20 +51,21 @@ func main() {
 	r.GET("/healthz", handlers.Healthz)
 	r.GET("/readyz", handlers.Readyz)
 
-	// Routes
-	r.POST("/register", handlers.RegisterUser)
-	r.POST("/login", handlers.LoginUser)
+	// API v1
+	v1 := r.Group("/api/v1")
+	v1.POST("/register", handlers.RegisterUser)
+	v1.POST("/login", handlers.LoginUser)
 
-	protected := r.Group("/")
+	protected := v1.Group("")
 	protected.Use(middleware.AuthMiddleware())
 	protected.POST("/events", handlers.CreateEvent)
 	protected.GET("/events", handlers.GetEvents)
 	protected.GET("/events/:id", handlers.GetEvent)
 	protected.POST("/tickets", handlers.CreateTicket)
 	protected.GET("/tickets", handlers.GetTickets)
-	protected.GET("/tickets/:id", handlers.GetUserTickets)
 	protected.GET("/users/:id", handlers.GetUser)
 	protected.GET("/users/:id/events", handlers.GetUserEvents)
+	protected.GET("/users/:id/tickets", handlers.GetUserTickets)
 
 	srv := &http.Server{
 		Addr:    ":" + cfg.Port,
