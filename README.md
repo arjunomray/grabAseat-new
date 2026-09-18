@@ -1,86 +1,149 @@
-# Grab A Seat
+# GrabMySeat
 
-A modern event ticketing platform built with Go and React, allowing users to create, manage, and book event tickets with ease.
+An event ticketing platform where people can create events, browse them, and claim seats. Built as a small, end-to-end full-stack project: a Go/Gin API, a React/Vite single-page app, and PostgreSQL.
 
-## Tech Stack
+## Tech stack
 
-### Backend
-- Go 1.23.4
-- Gin Web Framework
-- GORM with PostgreSQL
-- JWT Authentication
+| Layer | Technology |
+|---|---|
+| Backend | Go 1.23, Gin, GORM, PostgreSQL 16 |
+| Auth | JWT bearer tokens |
+| Frontend | React 18, Vite 6, React Router, Tailwind CSS, `qrcode.react` |
+| Tooling | Nix flakes, GNU Make, goose (migrations), golangci-lint, govulncheck |
+| Containers (optional) | Docker / Docker Compose |
 
-### Frontend
-- React 18
-- Vite
-- Tailwind CSS
-- React Router DOM
-- QRCode Generation
+## Architecture
 
-### Infrastructure
-- Docker & Docker Compose
-- PostgreSQL 16
-
-## Getting Started
-
-### Prerequisites
-- Docker and Docker Compose installed on your machine
-
-### Quick Start
-
-1. Clone the repository:
-
-```bash
-git clone <repository-url>
-cd grab-a-seat
+```
+┌──────────────────────────┐
+│  React SPA (Vite :5173)  │
+│  fetch + Bearer JWT      │
+└────────────┬─────────────┘
+             │ JSON / HTTP
+             ▼
+┌──────────────────────────┐
+│  Go API (Gin :8080)      │
+│  handlers → GORM         │
+└────────────┬─────────────┘
+             │ SQL
+             ▼
+┌──────────────────────────┐
+│  PostgreSQL 16 (:5432)   │
+└──────────────────────────┘
 ```
 
-2. Start the application:
-```bash
-docker-compose up --build
-```
+In development the SPA is served by the Vite dev server and the API runs as a normal Go process. `make dev` starts PostgreSQL, the API, and the UI together.
 
-3. Access the application:
-- Frontend: http://localhost:5173
-- API: http://localhost:8080
+## Repository layout
 
-### Available Endpoints
-
-Public Routes:
-- `POST /register` - Create new account
-- `POST /login` - User authentication
-
-Protected Routes (requires JWT):
-- `POST /events` - Create event
-- `GET /events` - List all events
-- `GET /events/:id` - Get event details
-- `POST /tickets` - Book ticket
-- `GET /tickets` - View all tickets
-- `GET /tickets/:id` - View user tickets
-
-## Development
-
-### Project Structure
 ```
 .
-├── backend/          # Go backend service
-├── frontend/         # React frontend
-├── docker-compose.yml
-├── Dockerfile.backend
-└── Dockerfile.frontend
+├── main.go               # API entrypoint and routes
+├── handlers/             # HTTP handlers (users, events, tickets)
+├── middleware/           # JWT auth middleware
+├── models/               # GORM models
+├── dbConfig/             # Database connection
+├── utils/                # JWT helpers
+├── frontend/             # React + Vite app
+├── Makefile              # Local dev and database lifecycle
+├── flake.nix             # Reproducible dev shell and builds
+└── docker-compose.yml    # Optional container workflow
 ```
 
-### Environment Setup
-Create a `.env` file:
-```env
-DB_HOST=postgres
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=eventer
-DB_PORT=5432
-```
+## Getting started with Nix (recommended)
 
-### Stopping the Application
+Requires [Nix](https://nixos.org) with flakes enabled.
+
 ```bash
-docker-compose down
+# 1. Enter the development shell (Go, Node, PostgreSQL, goose, make, ...)
+nix develop
+
+# 2. Initialise and start the local PostgreSQL cluster, then run everything
+make dev
 ```
+
+- API: <http://localhost:8080>
+- UI: <http://localhost:5173>
+
+`make dev` creates a project-local database cluster in `.postgres/` (trust auth, local only), starts it, and then runs the API and the Vite server side by side. Stop the database with `make db-stop`.
+
+You can also start everything in one shot, without entering the shell first:
+
+```bash
+nix run   # runs `make dev` with the toolchain bundled
+```
+
+### Make targets
+
+| Target | Description |
+|---|---|
+| `make dev` | PostgreSQL + API + UI together |
+| `make backend` | Run the API only |
+| `make frontend` | Run the Vite dev server only |
+| `make db-init` / `db-start` | Initialise and start the local PostgreSQL cluster |
+| `make db-stop` / `db-reset` | Stop it / stop and wipe it |
+| `make migrate` | Apply goose migrations (once `migrations/` exists) |
+| `make test` | Run the Go tests |
+| `make build` | Build `bin/eventer` and the Vite production bundle |
+| `make help` | List all targets |
+
+## Docker (optional)
+
+A `docker-compose.yml` is provided for a container workflow. It is currently development-oriented (the frontend runs the Vite dev server, and image hardening is still pending); the Nix path above is the supported way to run the project today.
+
+## Environment variables
+
+The service reads these from the process environment. Copy `.env.example` to `.env` for reference; the Makefile already supplies the same defaults, so no `.env` file is required for `make dev`.
+
+| Variable | Default | Description |
+|---|---|---|
+| `DB_HOST` | `localhost` | PostgreSQL host |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `DB_USER` | `postgres` | Database user |
+| `DB_PASSWORD` | `postgres` | Database password |
+| `DB_NAME` | `eventer` | Database name |
+| `PORT` | `8080` | API port (wired through in a later change) |
+
+## API
+
+All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <token>`.
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/register` | – | Create an account |
+| `POST` | `/login` | – | Exchange credentials for a JWT |
+| `POST` | `/events` | ✓ | Create an event |
+| `GET` | `/events` | ✓ | List events |
+| `GET` | `/events/:id` | ✓ | Get one event |
+| `POST` | `/tickets` | ✓ | Claim a ticket |
+| `GET` | `/tickets` | ✓ | List tickets |
+| `GET` | `/tickets/:id` | ✓ | Tickets for a user |
+| `GET` | `/users/:id` | ✓ | User profile |
+| `GET` | `/users/:id/events` | ✓ | Events a user created or registered for |
+
+> The API is currently unversioned; routes will move under `/api/v1` as part of the ongoing cleanup.
+
+## Data model
+
+- **User** — `id` (UUID), `name`, `email` (unique), `password`
+- **Event** — `id`, `created_by`, `name`, `time`, `location`, `price`, `seats_available`, `tags`
+- **Ticket** — `id`, `event_id`, `user_id` (a registration connecting a user to an event)
+
+## Testing
+
+```bash
+make test        # go test ./...
+nix flake check  # builds the backend and frontend
+```
+
+## Design notes and tradeoffs
+
+- **Single service, single SPA.** No microservices; the API and UI are simple to run and reason about, at the cost of one deployable handling everything.
+- **GORM over hand-written SQL.** Faster to build CRUD, but schema management is moving from `AutoMigrate` to versioned goose migrations so changes are reviewable and reversible.
+- **JWT in `localStorage`.** Simple and stateless; it does mean XSS is a real threat and there is no server-side revocation or refresh yet.
+- **Money as `float64`, time as `string`.** Convenient initially, but both will become integer minor units and `timestamptz` respectively.
+- **Dev-first tooling.** The Nix flake and Makefile are the primary workflow; production container images are a later step.
+
+## License
+
+Released under the [MIT License](LICENSE).
