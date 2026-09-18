@@ -9,25 +9,33 @@ import (
 	"arjunomray/eventer/utils"
 )
 
+const claimsKey = "claims"
+
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			api.Unauthorized(c, "Authorization header is required")
+		token, ok := strings.CutPrefix(c.GetHeader("Authorization"), "Bearer ")
+		if !ok || token == "" {
+			api.Unauthorized(c, "Invalid or missing authorization header")
 			return
 		}
 
-		tokenString := strings.Split(authHeader, " ")[1]
-		if tokenString == "" {
-			api.Unauthorized(c, "Token is required")
-			return
-		}
-		claims, err := utils.VerifyJWT(tokenString)
+		claims, err := utils.VerifyJWT(token)
 		if err != nil {
 			api.Unauthorized(c, "Invalid or expired token")
 			return
 		}
-		c.Set("claims", claims)
+
+		c.Set(claimsKey, claims)
 		c.Next()
 	}
+}
+
+// ClaimsFrom returns the authenticated user's claims, if present.
+func ClaimsFrom(c *gin.Context) (*utils.Claims, bool) {
+	value, exists := c.Get(claimsKey)
+	if !exists {
+		return nil, false
+	}
+	claims, ok := value.(*utils.Claims)
+	return claims, ok
 }

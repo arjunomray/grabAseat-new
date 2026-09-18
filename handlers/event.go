@@ -11,8 +11,8 @@ import (
 
 	"arjunomray/eventer/api"
 	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/middleware"
 	"arjunomray/eventer/models"
-	"arjunomray/eventer/utils"
 )
 
 type EventInput struct {
@@ -33,12 +33,7 @@ func CreateEvent(c *gin.Context) {
 	}
 
 	// The event owner comes from the JWT, never from the request body.
-	claims, exists := c.Get("claims")
-	if !exists {
-		api.Unauthorized(c, "Unauthorized")
-		return
-	}
-	userClaims, ok := claims.(*utils.Claims)
+	userClaims, ok := middleware.ClaimsFrom(c)
 	if !ok {
 		api.Unauthorized(c, "Unauthorized")
 		return
