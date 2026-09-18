@@ -28,9 +28,16 @@ dist-ssr/
 # Build directories
 frontend/dist/
 frontend/.vite/
+bin/
+
+# Nix
+result
+result-*
+.direnv/
 
 # Ignore database files
 data.db
+.postgres/
 
 # Ignore Swagger generated files
 docs/docs.go
@@ -38,6 +45,7 @@ docs/swagger.json
 docs/swagger.yaml
 
 # Ignore Go build files
+/eventer
 *.exe
 *.exe~
 *.dll
@@ -59,3 +67,6 @@ coverage/
 *.iws
 .idea/
 .vscode/
+
+# Local planning notes (not part of the repo)
+TASKS.md
