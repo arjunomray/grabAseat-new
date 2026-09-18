@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
+import { apiFetch } from '../api';
 
 const UserTickets = () => {
     const { id } = useParams();
@@ -14,22 +15,14 @@ const UserTickets = () => {
             if (!token) return;
 
             try {
-                const response = await fetch(`http://localhost:8080/api/v1/users/${id}/tickets`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const response = await apiFetch(`/users/${id}/tickets`);
                 const data = await response.json();
                 setTickets(data);
 
                 // Fetch event details for each ticket
                 const eventDetails = {};
                 for (const ticket of data) {
-                    const eventResponse = await fetch(`http://localhost:8080/api/v1/events/${ticket.event_id}`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
+                    const eventResponse = await apiFetch(`/events/${ticket.event_id}`);
                     const eventData = await eventResponse.json();
                     eventDetails[ticket.event_id] = eventData;
                 }

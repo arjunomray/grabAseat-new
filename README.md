@@ -106,6 +106,8 @@ The service loads an optional `.env` file at startup, then reads these variables
 | `JWT_SECRET` | – | Required; secret used to sign JWTs |
 | `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed origins |
 
+The frontend reads `VITE_API_URL` (see `frontend/.env.example`). Leave it unset in development and the Vite dev server proxies `/api` to the backend; set it when the UI and API are served from different origins.
+
 ## API
 
 All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <token>`.

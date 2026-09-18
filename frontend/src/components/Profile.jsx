@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../api";
 
 const EventCard = ({ event }) => (
   <div className="bg-gray-50 rounded-xl p-4 hover:shadow-md transition-shadow duration-200">
@@ -89,16 +90,8 @@ export const Profile = ({ setUserId }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('token');
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/v1/users/${localStorage.getItem('userId')}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await apiFetch(`/users/${localStorage.getItem('userId')}`);
         if (!response.ok) {
           setUser(null);
           return;
@@ -114,16 +107,8 @@ export const Profile = ({ setUserId }) => {
 
   useEffect(() => {
     const fetchUserEvents = async () => {
-      const token = localStorage.getItem('token');
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/v1/users/${localStorage.getItem('userId')}/events`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await apiFetch(`/users/${localStorage.getItem('userId')}/events`);
         if (!response.ok) {
           setCreatedEvents([]);
           setRegisteredEvents([]);

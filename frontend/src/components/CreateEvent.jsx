@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRef } from 'react';
+import { apiFetch } from '../api';
 
 const EventTags = ({ tags, setTags }) => {
     const [inputValue, setInputValue] = useState('');
@@ -83,12 +84,8 @@ const CreateEvent = () => {
         e.preventDefault();
         setSuccessMessage('');
         try {
-            const response = await fetch('http://localhost:8080/api/v1/events', {
+            const response = await apiFetch('/events', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({
                     name: formData.name,
                     description: formData.description,

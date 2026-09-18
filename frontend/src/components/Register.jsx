@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../api';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -23,11 +24,8 @@ const Register = () => {
         setIsLoading(true);
         setError('');
         try {
-            const response = await fetch("http://localhost:8080/api/v1/register", {
+            const response = await apiFetch("/register", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
                 body: JSON.stringify({ ...formData })
             });
             if (response.ok) {

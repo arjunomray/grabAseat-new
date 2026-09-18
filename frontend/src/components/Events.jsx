@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { apiFetch } from '../api';
 
 const EventModal = ({ event, isOpen, onClose, isRegistered, onRegister }) => {
     if (!isOpen) return null;
@@ -149,12 +150,8 @@ const CreateEventModal = ({ isOpen, onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:8080/api/v1/events', {
+            const response = await apiFetch('/events', {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({
                     ...formData,
                     time: new Date(formData.time).toISOString(),
@@ -440,11 +437,7 @@ const Events = () => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/v1/events', {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                const response = await apiFetch('/events');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -457,11 +450,7 @@ const Events = () => {
 
         const fetchUserTickets = async () => {
             try {
-                const response = await fetch(`http://localhost:8080/api/v1/users/${userId}/tickets`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                const response = await apiFetch(`/users/${userId}/tickets`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -478,12 +467,8 @@ const Events = () => {
 
     const handleRegister = async (eventId) => {
         try {
-            const response = await fetch('http://localhost:8080/api/v1/tickets', {
+            const response = await apiFetch('/tickets', {
                 method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({
                     event_id: eventId
                 })
@@ -655,11 +640,7 @@ const Events = () => {
                         // Refresh events after successful creation
                         const fetchEvents = async () => {
                             try {
-                                const response = await fetch('http://localhost:8080/api/v1/events', {
-                                    headers: {
-                                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                                    }
-                                });
+                                const response = await apiFetch('/events');
                                 if (!response.ok) {
                                     throw new Error('Network response was not ok');
                                 }

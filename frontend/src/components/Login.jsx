@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../api';
 
 const Login = ({ setUserId }) => {
   const [formData, setFormData] = useState({
@@ -23,11 +24,8 @@ const Login = ({ setUserId }) => {
     setError('');
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/v1/login', {
+      const response = await apiFetch('/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify(formData)
       });
       const data = await response.json();
