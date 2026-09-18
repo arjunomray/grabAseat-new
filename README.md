@@ -112,6 +112,8 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
+| `GET` | `/healthz` | – | Liveness probe: the process is running |
+| `GET` | `/readyz` | – | Readiness probe: the database is reachable |
 | `POST` | `/register` | – | Create an account |
 | `POST` | `/login` | – | Exchange credentials for a JWT |
 | `POST` | `/events` | ✓ | Create an event |

@@ -53,6 +53,11 @@ func Conflict(c *gin.Context, message string) {
 	Error(c, http.StatusConflict, "conflict", message)
 }
 
+// Unavailable reports that a dependency needed to serve the request is down.
+func Unavailable(c *gin.Context, message string) {
+	Error(c, http.StatusServiceUnavailable, "unavailable", message)
+}
+
 // Internal logs the underlying error and returns a generic message so database
 // and other implementation details never reach the client.
 func Internal(c *gin.Context, err error) {

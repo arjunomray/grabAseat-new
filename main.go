@@ -39,6 +39,10 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	// Infrastructure endpoints (unversioned).
+	r.GET("/healthz", handlers.Healthz)
+	r.GET("/readyz", handlers.Readyz)
+
 	// Routes
 	r.POST("/register", handlers.RegisterUser)
 	r.POST("/login", handlers.LoginUser)
