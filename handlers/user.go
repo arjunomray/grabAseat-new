@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
 	"arjunomray/eventer/api"
@@ -17,7 +18,7 @@ import (
 type RegisterUserInput struct {
 	Name     string `json:"name" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8"`
+	Password string `json:"password" binding:"required,min=8,max=72"`
 }
 
 func GetUser(c *gin.Context) {
@@ -87,11 +88,17 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	hash, err := bcrypt.GenerateFromPassword([]byte(userInput.Password), bcrypt.DefaultCost)
+	if err != nil {
+		api.Internal(c, err)
+		return
+	}
+
 	user := models.User{
 		ID:       uuid.New(),
 		Name:     userInput.Name,
 		Email:    userInput.Email,
-		Password: userInput.Password,
+		Password: string(hash),
 	}
 
 	if err := dbConfig.Db.Create(&user).Error; err != nil {
@@ -114,13 +121,18 @@ func LoginUser(c *gin.Context) {
 	}
 
 	var user models.User
-	err := dbConfig.Db.Where("email = ? AND password = ?", credentials.Email, credentials.Password).First(&user).Error
+	err := dbConfig.Db.Where("email = ?", credentials.Email).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		api.Unauthorized(c, "Invalid email or password")
 		return
 	}
 	if err != nil {
 		api.Internal(c, err)
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
+		api.Unauthorized(c, "Invalid email or password")
 		return
 	}
 

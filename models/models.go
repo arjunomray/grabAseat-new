@@ -13,7 +13,7 @@ type User struct {
 	ID        uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email" gorm:"unique"`
-	Password  string    `json:"password"`
+	Password  string    `json:"-"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Tickets   []Ticket  `json:"tickets" gorm:"foreignKey:UserID"`
