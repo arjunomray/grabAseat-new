@@ -38,6 +38,37 @@
             cp -r dist/. $out/
           '';
         };
+
+        # `nix run` — start Postgres, the API, and the UI from the repo root.
+        devApp = pkgs.writeShellApplication {
+          name = "grabmyseat-dev";
+          runtimeInputs = with pkgs; [
+            bash
+            coreutils
+            findutils
+            gnugrep
+            gawk
+            gnumake
+            go
+            nodejs_22
+            postgresql_16
+            goose
+            jq
+            curl
+            cacert
+          ];
+          text = ''
+            export SSL_CERT_FILE="${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
+            export NIX_SSL_CERT_FILE="$SSL_CERT_FILE"
+
+            if [ ! -f Makefile ]; then
+              echo "grabmyseat-dev: run this from the repository root (no Makefile found)." >&2
+              exit 1
+            fi
+
+            exec make dev
+          '';
+        };
       in
       {
         # `nix develop`
@@ -76,6 +107,12 @@
         # `nix flake check` builds both.
         checks = {
           inherit backend frontend;
+        };
+
+        # `nix run` — start Postgres, the API, and the UI together.
+        apps.default = {
+          type = "app";
+          program = "${devApp}/bin/grabmyseat-dev";
         };
 
         # `nix fmt` — format every .nix file in the repo.
