@@ -16,7 +16,7 @@ var Db *gorm.DB
 func InitDatabase(cfg config.Database) {
 	var err error
 	for i := range 5 {
-		Db, err = gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
+		Db, err = gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{TranslateError: true})
 		if err == nil {
 			break
 		}

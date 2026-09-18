@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -100,8 +101,10 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	email := strings.ToLower(strings.TrimSpace(userInput.Email))
+
 	var existingUser models.User
-	err := dbConfig.Db.Where("email = ?", userInput.Email).First(&existingUser).Error
+	err := dbConfig.Db.Where("email = ?", email).First(&existingUser).Error
 	if err == nil {
 		api.Conflict(c, "User already exists")
 		return
@@ -119,11 +122,17 @@ func RegisterUser(c *gin.Context) {
 	user := models.User{
 		ID:       uuid.New(),
 		Name:     userInput.Name,
-		Email:    userInput.Email,
+		Email:    email,
 		Password: string(hash),
 	}
 
 	if err := dbConfig.Db.Create(&user).Error; err != nil {
+		// The unique constraint is the source of truth: handle the race where
+		// another request created the same email between the check and insert.
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			api.Conflict(c, "User already exists")
+			return
+		}
 		api.Internal(c, err)
 		return
 	}
@@ -143,7 +152,7 @@ func LoginUser(c *gin.Context) {
 	}
 
 	var user models.User
-	err := dbConfig.Db.Where("email = ?", credentials.Email).First(&user).Error
+	err := dbConfig.Db.Where("email = ?", strings.ToLower(strings.TrimSpace(credentials.Email))).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		api.Unauthorized(c, "Invalid email or password")
 		return
