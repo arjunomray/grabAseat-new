@@ -87,6 +87,16 @@ func GetUserTickets(c *gin.Context) {
 		return
 	}
 
+	claims, ok := middleware.ClaimsFrom(c)
+	if !ok {
+		api.Unauthorized(c, "Unauthorized")
+		return
+	}
+	if claims.UserID != userID {
+		api.Forbidden(c, "You can only access your own resources")
+		return
+	}
+
 	var user models.User
 	if err := dbConfig.Db.Preload("Tickets").First(&user, userID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -11,9 +11,25 @@ import (
 
 	"arjunomray/eventer/api"
 	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/middleware"
 	"arjunomray/eventer/models"
 	"arjunomray/eventer/utils"
 )
+
+// requireSelf returns the authenticated user, or writes a 401/403 and reports
+// false when the caller is not the owner of the requested user resource.
+func requireSelf(c *gin.Context, userID uuid.UUID) bool {
+	claims, ok := middleware.ClaimsFrom(c)
+	if !ok {
+		api.Unauthorized(c, "Unauthorized")
+		return false
+	}
+	if claims.UserID != userID {
+		api.Forbidden(c, "You can only access your own resources")
+		return false
+	}
+	return true
+}
 
 type RegisterUserInput struct {
 	Name     string `json:"name" binding:"required"`
@@ -25,6 +41,9 @@ func GetUser(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		api.BadRequest(c, "Invalid user ID")
+		return
+	}
+	if !requireSelf(c, id) {
 		return
 	}
 
@@ -45,6 +64,9 @@ func GetUserEvents(c *gin.Context) {
 	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		api.BadRequest(c, "Invalid user ID")
+		return
+	}
+	if !requireSelf(c, userID) {
 		return
 	}
 
