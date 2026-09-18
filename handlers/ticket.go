@@ -102,8 +102,14 @@ func CreateTicket(c *gin.Context) {
 }
 
 func GetTickets(c *gin.Context) {
+	claims, ok := middleware.ClaimsFrom(c)
+	if !ok {
+		api.Unauthorized(c, "Unauthorized")
+		return
+	}
+
 	var tickets []models.Ticket
-	if err := dbConfig.Db.Find(&tickets).Error; err != nil {
+	if err := dbConfig.Db.Where("user_id = ?", claims.UserID).Order("created_at DESC").Find(&tickets).Error; err != nil {
 		api.Internal(c, err)
 		return
 	}

@@ -120,7 +120,8 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 | `GET` | `/api/v1/events` | ✓ | List events |
 | `GET` | `/api/v1/events/:id` | ✓ | Get one event |
 | `POST` | `/api/v1/tickets` | ✓ | Claim a ticket |
-| `GET` | `/api/v1/tickets` | ✓ | List tickets |
+| `GET` | `/api/v1/tickets` | ✓ | List the caller's tickets |
+| `GET` | `/api/v1/tickets/me` | ✓ | Alias for the caller's tickets |
 | `GET` | `/api/v1/users/:id` | ✓ | User profile |
 | `GET` | `/api/v1/users/:id/events` | ✓ | Events a user created or registered for |
 | `GET` | `/api/v1/users/:id/tickets` | ✓ | Tickets for a user |
