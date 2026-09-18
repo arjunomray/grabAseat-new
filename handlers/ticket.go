@@ -10,18 +10,29 @@ import (
 
 	"arjunomray/eventer/api"
 	"arjunomray/eventer/dbConfig"
+	"arjunomray/eventer/middleware"
 	"arjunomray/eventer/models"
 )
 
+type CreateTicketInput struct {
+	EventID uuid.UUID `json:"event_id" binding:"required"`
+}
+
 func CreateTicket(c *gin.Context) {
-	var ticket models.Ticket
-	if err := c.ShouldBindJSON(&ticket); err != nil {
+	claims, ok := middleware.ClaimsFrom(c)
+	if !ok {
+		api.Unauthorized(c, "Unauthorized")
+		return
+	}
+
+	var input CreateTicketInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		api.BadRequest(c, err.Error())
 		return
 	}
 
 	var existingTicket models.Ticket
-	err := dbConfig.Db.Where("event_id = ? AND user_id = ?", ticket.EventID, ticket.UserID).First(&existingTicket).Error
+	err := dbConfig.Db.Where("event_id = ? AND user_id = ?", input.EventID, claims.UserID).First(&existingTicket).Error
 	switch {
 	case err == nil:
 		api.Conflict(c, "Ticket already exists")
@@ -31,7 +42,11 @@ func CreateTicket(c *gin.Context) {
 		return
 	}
 
-	ticket.ID = uuid.New()
+	ticket := models.Ticket{
+		ID:      uuid.New(),
+		EventID: input.EventID,
+		UserID:  claims.UserID,
+	}
 	if err := dbConfig.Db.Create(&ticket).Error; err != nil {
 		api.Internal(c, err)
 		return

@@ -485,8 +485,7 @@ const Events = () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    event_id: eventId,
-                    user_id: userId
+                    event_id: eventId
                 })
             });
             if (!response.ok) {
