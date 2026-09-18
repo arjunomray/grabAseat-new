@@ -131,7 +131,7 @@ All routes are JSON over HTTP. Protected routes require `Authorization: Bearer <
 | `POST` | `/api/v1/events` | ✓ | Create an event |
 | `GET` | `/api/v1/events` | ✓ | List events |
 | `GET` | `/api/v1/events/:id` | ✓ | Get one event |
-| `POST` | `/api/v1/tickets` | ✓ | Claim a ticket |
+| `POST` | `/api/v1/tickets` | ✓ | Claim a ticket (supports an `Idempotency-Key` header for safe retries) |
 | `GET` | `/api/v1/tickets` | ✓ | List the caller's tickets |
 | `GET` | `/api/v1/tickets/me` | ✓ | Alias for the caller's tickets |
 | `DELETE` | `/api/v1/tickets/:id` | ✓ | Cancel one of your tickets |

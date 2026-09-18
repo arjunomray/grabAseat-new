@@ -57,3 +57,11 @@ func (t *Ticket) BeforeCreate(tx *gorm.DB) error {
 	t.ID = uuid.New()
 	return nil
 }
+
+// IdempotencyKey records a booking request so retries return the same ticket.
+type IdempotencyKey struct {
+	Key       string    `json:"key" gorm:"primaryKey"`
+	UserID    uuid.UUID `json:"user_id" gorm:"primaryKey;type:uuid"`
+	TicketID  uuid.UUID `json:"ticket_id" gorm:"type:uuid"`
+	CreatedAt time.Time `json:"createdAt"`
+}

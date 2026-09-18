@@ -20,6 +20,7 @@ var (
 	errEventPast = errors.New("event has already passed")
 	errSoldOut   = errors.New("event is sold out")
 	errDuplicate = errors.New("ticket already exists")
+	errReplay    = errors.New("idempotent replay")
 )
 
 type CreateTicketInput struct {
@@ -39,6 +40,8 @@ func CreateTicket(c *gin.Context) {
 		return
 	}
 
+	idempotencyKey := c.GetHeader("Idempotency-Key")
+
 	var ticket models.Ticket
 	err := dbConfig.Db.Transaction(func(tx *gorm.DB) error {
 		// Lock the event row so concurrent bookings for the same event
@@ -48,6 +51,21 @@ func CreateTicket(c *gin.Context) {
 			Where("id = ?", input.EventID).
 			First(&event).Error; err != nil {
 			return err
+		}
+
+		// A repeated request with the same key returns the original ticket.
+		if idempotencyKey != "" {
+			var existing models.IdempotencyKey
+			err := tx.Where("user_id = ? AND key = ?", claims.UserID, idempotencyKey).First(&existing).Error
+			switch {
+			case err == nil:
+				if err := tx.Preload("Event").First(&ticket, existing.TicketID).Error; err != nil {
+					return err
+				}
+				return errReplay
+			case !errors.Is(err, gorm.ErrRecordNotFound):
+				return err
+			}
 		}
 
 		if event.Time.Before(time.Now()) {
@@ -77,7 +95,21 @@ func CreateTicket(c *gin.Context) {
 			EventID: event.ID,
 			UserID:  claims.UserID,
 		}
-		return tx.Create(&ticket).Error
+		if err := tx.Create(&ticket).Error; err != nil {
+			return err
+		}
+
+		if idempotencyKey != "" {
+			record := models.IdempotencyKey{
+				Key:      idempotencyKey,
+				UserID:   claims.UserID,
+				TicketID: ticket.ID,
+			}
+			if err := tx.Create(&record).Error; err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 
 	switch {
@@ -92,6 +124,9 @@ func CreateTicket(c *gin.Context) {
 		return
 	case errors.Is(err, errDuplicate), errors.Is(err, gorm.ErrDuplicatedKey):
 		api.Conflict(c, "Ticket already exists")
+		return
+	case errors.Is(err, errReplay):
+		c.JSON(http.StatusOK, ticket)
 		return
 	case err != nil:
 		api.Internal(c, err)
