@@ -17,7 +17,6 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Tickets   []Ticket  `json:"tickets" gorm:"foreignKey:UserID"`
-	Events    []Event   `json:"events" gorm:"many2many:user_events;"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
@@ -29,6 +28,7 @@ type Event struct {
 	ID             uuid.UUID      `json:"id" gorm:"type:uuid;primaryKey"`
 	CreatedBy      uuid.UUID      `json:"createdBy" gorm:"type:uuid"`
 	Name           string         `json:"name"`
+	Description    string         `json:"description"`
 	Time           time.Time      `json:"time" gorm:"type:timestamptz"`
 	Location       string         `json:"location"`
 	PriceCents     int64          `json:"priceCents" gorm:"column:price_cents"`
@@ -36,7 +36,6 @@ type Event struct {
 	Tags           pq.StringArray `json:"tags" gorm:"type:text[]"`
 	CreatedAt      time.Time      `json:"createdAt"`
 	UpdatedAt      time.Time      `json:"updatedAt"`
-	Users          []User         `json:"users" gorm:"many2many:user_events;"`
 	Tickets        []Ticket       `json:"tickets" gorm:"foreignKey:EventID"`
 }
 

@@ -91,6 +91,7 @@ const CreateEvent = () => {
                 },
                 body: JSON.stringify({
                     name: formData.name,
+                    description: formData.description,
                     time: new Date(formData.time).toISOString(),
                     location: formData.location,
                     priceCents: Math.round(parseFloat(formData.price) * 100),

@@ -17,6 +17,7 @@ import (
 
 type EventInput struct {
 	Name           string    `json:"name" binding:"required"`
+	Description    string    `json:"description"`
 	Time           time.Time `json:"time" binding:"required"`
 	Location       string    `json:"location" binding:"required"`
 	PriceCents     int64     `json:"priceCents" binding:"gte=0"`
@@ -46,6 +47,7 @@ func CreateEvent(c *gin.Context) {
 	event := models.Event{
 		ID:             uuid.New(),
 		Name:           eventInput.Name,
+		Description:    eventInput.Description,
 		Time:           eventInput.Time,
 		Location:       eventInput.Location,
 		PriceCents:     eventInput.PriceCents,
