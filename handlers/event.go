@@ -32,6 +32,11 @@ func CreateEvent(c *gin.Context) {
 		return
 	}
 
+	if !eventInput.Time.After(time.Now()) {
+		api.BadRequest(c, "Event time must be in the future")
+		return
+	}
+
 	// The event owner comes from the JWT, never from the request body.
 	userClaims, ok := middleware.ClaimsFrom(c)
 	if !ok {
